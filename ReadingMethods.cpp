@@ -124,19 +124,80 @@ std::string findFile()
 	return filepath;
 }
 
+bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return true, if files is choosen, otherwise false
+{
+	filename1 = "";
+	filename2 = "";
+
+	std::cout << "Выберите 2 файла для работы с ними:" << std::endl;
+
+	std::vector<std::string> twoFilesQuestion{
+	"Далее",
+	"Выбрать файл типа <название издания> <вид издания> <издающая организация> <год выпуска XXXX>\n(Не выбран)",
+	"Выбрать файл типа <название издания> <адрес редакции> <фамилия главного редактора>\n(Не выбран)",
+	"Выйти в главное меню"
+	};
+
+	bool isChoosen(false);
+	bool quit(false);
+
+	while (not(isChoosen or quit))
+	{
+		try
+		{
+			ask(twoFilesQuestion);
+			int choice = inputChoice(twoFilesQuestion.size());
+
+			switch (choice)
+			{
+			case 1: 
+				if (filename1 != "" and filename2 != "") isChoosen = true; break;
+			case 2:
+			{
+				filename1 = findFile();
+				int index = twoFilesQuestion[2 - 1].find("(");
+				twoFilesQuestion[2 - 1].erase(index);
+				twoFilesQuestion[2 - 1].append("(" + filename1 + ")"); // appending filename to menu
+				break;
+			}
+			case 3: 
+			{
+				filename2 = findFile();
+				int index = twoFilesQuestion[3 - 1].find("(");
+				twoFilesQuestion[3 - 1].erase(index);
+				twoFilesQuestion[3 - 1].append("(" + filename2 + ")"); // appending filename to menu
+				break;
+			}
+			case 4: quit = true; break;
+			}
+		}
+		catch (std::exception& ex)
+		{
+			std::cout << ex.what() << std::endl;
+		}
+	}
+	return isChoosen;
+}
+
 void search()
 {
-	std::cout << "Выберите два файла для поиска данных" << std::endl;
+	std::string str1, str2;
 
-	std::vector<std::string> searchQuestion{
-		"Выбрать файл типа <название издания> <вид издания> <издающая организация> <год выпуска XXXX>",
-		"Выбрать файл типа <название издания> <адрес редакции> <фамилия главного редактора>",
-		"Найти данные по названию издания",
-		"Выйти в главное меню"
-	};
-	
-	ask(searchQuestion);
-	int choice = inputChoice(searchQuestion.size());
+	if (chooseTwoFiles(str1, str2))
+	{
+
+	}
+	//std::cout << "Выберите два файла для поиска данных" << std::endl;
+
+	//std::vector<std::string> searchQuestion{
+	//	"Выбрать файл типа <название издания> <вид издания> <издающая организация> <год выпуска XXXX>",
+	//	"Выбрать файл типа <название издания> <адрес редакции> <фамилия главного редактора>",
+	//	"Найти данные по названию издания",
+	//	"Выйти в главное меню"
+	//};
+	//
+	//ask(searchQuestion);
+	//int choice = inputChoice(searchQuestion.size());
 
 }
 
