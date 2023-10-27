@@ -181,24 +181,19 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return tr
 
 void search()
 {
-	std::string str1, str2;
+	std::string filename1, filename2;
 
-	if (chooseTwoFiles(str1, str2))
+	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
 	{
+		std::fstream bookStream, publisherStream;
+		bookStream.open(filename1, std::ios::in);
+		publisherStream.open(filename2, std::ios::in);
 
+		//One day it'll work
+
+		bookStream.close();
+		publisherStream.close();
 	}
-	//std::cout << "Выберите два файла для поиска данных" << std::endl;
-
-	//std::vector<std::string> searchQuestion{
-	//	"Выбрать файл типа <название издания> <вид издания> <издающая организация> <год выпуска XXXX>",
-	//	"Выбрать файл типа <название издания> <адрес редакции> <фамилия главного редактора>",
-	//	"Найти данные по названию издания",
-	//	"Выйти в главное меню"
-	//};
-	//
-	//ask(searchQuestion);
-	//int choice = inputChoice(searchQuestion.size());
-
 }
 
 void combineFiles()
