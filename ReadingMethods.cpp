@@ -151,7 +151,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return tr
 			switch (choice)
 			{
 			case 1: 
-				if (filename1 != "" and filename2 != "") isChoosen = true; break;
+				if (filename1 != "" and filename2 != "") isChoosen = true; break; //required some exception
 			case 2:
 			{
 				filename1 = findFile();
