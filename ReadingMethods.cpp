@@ -138,7 +138,11 @@ std::string findFile(const fileType& type)
 	return filepath;
 }
 
-bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return true, if files is choosen, otherwise false
+/*
+@brief function return true, if files is choosen, otherwise false
+*/
+bool chooseTwoFiles(std::string& filename1, std::string& filename2)
+
 {
 	filename1 = "";
 	filename2 = "";
