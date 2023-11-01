@@ -82,7 +82,16 @@ bool isNumber(const std::string& s)
 	return !s.empty() && it == s.end();
 }
 
-std::string findFile()
+fileType defineFileType(const std::string& filename)
+{
+	fileType result(none);
+	if (filename.find("{b}") != -1) result = book;
+	if (filename.find("{p}") != -1) result = publisher;
+
+	return result;
+}
+
+std::string findFile(const fileType& type)
 {
 	//std::string folder = "C:";
 	std::string filepath = ".";
@@ -96,12 +105,17 @@ std::string findFile()
 
 			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "/"))
 			{
-				//"../../ghj.txt"
-				std::string path = dirFolder.path().string();
-				path = path.substr(path.rfind("/") + 1, path.size());
+				if ((dirFolder.is_regular_file()
+					and dirFolder.path().extension() == ".txt"
+					and defineFileType(dirFolder.path().string()) == type)
 
-				
-				folderList.push_back(path);
+					or dirFolder.is_directory())
+				{
+					std::string path = dirFolder.path().string();
+					path = path.substr(path.rfind("/") + 1, path.size());
+
+					folderList.push_back(path);
+				}
 			}
 
 			std::cout << "Текущая папка - (" + filepath + ")" << std::endl;
@@ -154,7 +168,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return tr
 				if (filename1 != "" and filename2 != "") isChoosen = true; break; //required some exception
 			case 2:
 			{
-				filename1 = findFile();
+				filename1 = findFile(book);
 				int index = twoFilesQuestion[2 - 1].find("(");
 				twoFilesQuestion[2 - 1].erase(index);
 				twoFilesQuestion[2 - 1].append("(" + filename1 + ")"); // appending filename to menu
@@ -162,7 +176,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return tr
 			}
 			case 3: 
 			{
-				filename2 = findFile();
+				filename2 = findFile(publisher);
 				int index = twoFilesQuestion[3 - 1].find("(");
 				twoFilesQuestion[3 - 1].erase(index);
 				twoFilesQuestion[3 - 1].append("(" + filename2 + ")"); // appending filename to menu
