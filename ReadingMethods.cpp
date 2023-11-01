@@ -94,14 +94,14 @@ std::string findFile()
 			std::vector<std::string> folderList;
 			folderList.push_back("Назад");
 
-			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "/")) //maybe "\"
+			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "/"))
 			{
 				//"../../ghj.txt"
 				std::string path = dirFolder.path().string();
 				path = path.substr(path.rfind("/") + 1, path.size());
 
+				
 				folderList.push_back(path);
-				//folderList.push_back(dirFolder.path().string().substr();
 			}
 
 			std::cout << "Текущая папка - (" + filepath + ")" << std::endl;
@@ -133,8 +133,8 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2) // return tr
 
 	std::vector<std::string> twoFilesQuestion{
 	"Далее",
-	"Выбрать файл типа <название издания> <вид издания> <издающая организация> <год выпуска XXXX>\n(Не выбран)",
-	"Выбрать файл типа <название издания> <адрес редакции> <фамилия главного редактора>\n(Не выбран)",
+	"Выбрать файл издания\n(Не выбран)",
+	"Выбрать файл редакции\n(Не выбран)",
 	"Выйти в главное меню"
 	};
 
