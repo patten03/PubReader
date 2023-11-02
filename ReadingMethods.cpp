@@ -94,7 +94,8 @@ fileType defineFileType(const std::string& filename)
 std::string findFile(const fileType& type)
 {
 	//std::string folder = "C:";
-	std::string filepath = ".";
+	std::filesystem::path p = ".";
+	std::string filepath = std::filesystem::absolute(p).string();
 
 	while (filepath.find(".txt") == -1)
 	{
@@ -103,7 +104,7 @@ std::string findFile(const fileType& type)
 			std::vector<std::string> folderList;
 			folderList.push_back("Назад");
 
-			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "/"))
+			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "\\"))
 			{
 				if ((dirFolder.is_regular_file()
 					and dirFolder.path().extension() == ".txt"
@@ -112,7 +113,7 @@ std::string findFile(const fileType& type)
 					or dirFolder.is_directory())
 				{
 					std::string path = dirFolder.path().string();
-					path = path.substr(path.rfind("/") + 1, path.size());
+					path = path.substr(path.rfind("\\") + 1, path.size());
 
 					folderList.push_back(path);
 				}
@@ -124,14 +125,14 @@ std::string findFile(const fileType& type)
 
 			switch (choice)
 			{
-			case 1: filepath = filepath.substr(0, filepath.rfind("/")); break; //return from last folder
-			default: filepath = filepath + "/" + folderList[choice - 1]; break;
+			case 1: filepath = filepath.substr(0, filepath.rfind("\\")); break; //return from last folder
+			default: filepath = filepath + "\\" + folderList[choice - 1]; break;
 			}
 		}
 		catch (const std::exception& ex)
 		{
 			std::cout << "Вы не можете выбрать этот файл или папку!" << std::endl;
-			filepath = filepath.substr(0, filepath.rfind("/"));
+			filepath = filepath.substr(0, filepath.rfind("\\"));
 		}
 	}
 
