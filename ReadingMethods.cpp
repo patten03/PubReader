@@ -7,6 +7,45 @@ void standartSettings()
 	std::setlocale(LC_ALL, "ru");
 }
 
+BookNPublisher::BookNPublisher()
+{
+	this->name = "None";
+	this->kind = this->organization = this->year = "None";
+	this->address = this->surname = "None";
+}
+
+BookNPublisher::BookNPublisher(const std::string& data)
+{
+	std::string tempData = data;
+	std::vector<std::string> tempFields;
+
+	std::string delimiter = "; ";
+	size_t pos = 0;
+	while ((pos = tempData.find(delimiter)) != -1) {
+		tempFields.push_back(tempData.substr(0, pos));
+		tempData.erase(0, pos + delimiter.length());
+	}
+	tempFields.push_back(tempData);
+
+	this->name = tempFields[0];
+	if (tempFields.size() == 4)
+	{
+		this->kind = tempFields[1];
+		this->organization = tempFields[2];
+		this->year = tempFields[3];
+		this->address = "None";
+		this->surname = "None";
+	}
+	else
+	{
+		this->kind = "None";
+		this->organization = "None";
+		this->year = "None";
+		this->address = tempFields[1];
+		this->surname = tempFields[2];
+	}
+}
+
 void menu()
 {
 	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl;
@@ -139,6 +178,16 @@ std::string findFile(const fileType& type)
 	return filepath;
 }
 
+std::string upperCase(const std::string& word)
+{
+	std::string res(word);
+	for (int i(0); i < word.size(); i++)
+	{
+		res[i] = toupper(word[i]);
+	}
+	return res;
+}
+
 /*
 @brief function return true, if files is choosen, otherwise false
 */
@@ -208,11 +257,73 @@ void search()
 		bookStream.open(filename1, std::ios::in);
 		publisherStream.open(filename2, std::ios::in);
 
-		//One day it'll work
+
+		bool found(false);
+		bool quite(false);
+		while (not(quite))
+		{
+			try
+			{
+				BookNPublisher book = searchInFile("Краски", bookStream);
+				while (not(found or bookStream.eof()))
+				{
+
+				}
+				while (not(found or publisherStream.eof()))
+				{
+
+				}
+				//bool found(false);
+				//bool quite(false);
+
+				//std::string str;
+				//std::string fnd("Зоологический атлас");
+				//while (not(found or bookStream.eof()))
+				//{
+				//	std::getline(bookStream, str);
+				//	if (str.find(fnd) != -1) found = true;
+				//	index++;
+				//}
+				//std::cout << str << std::endl;
+				//std::cin.get();
+			}
+			catch (std::exception& ex)
+			{
+
+			}
+		}
+
+
 
 		bookStream.close();
 		publisherStream.close();
 	}
+}
+
+BookNPublisher searchInFile(const std::string& book, std::fstream& file)
+{
+
+	std::string dataRes;
+	bool found(false);
+	std::string bookTemp = upperCase(book);
+	while (not(found or file.eof()))
+	{
+		std::getline(file, dataRes);
+		if (upperCase(dataRes).find(bookTemp) != -1)
+			found = true;
+	}
+
+	if (found)
+	{
+		BookNPublisher res(dataRes);
+		return res;
+	}
+	else
+	{
+		BookNPublisher res;
+		return res;
+	}
+	
 }
 
 void combineFiles()
