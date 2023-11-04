@@ -46,6 +46,16 @@ BookNPublisher::BookNPublisher(const std::string& data)
 	}
 }
 
+void BookNPublisher::merge(const BookNPublisher& book, const BookNPublisher& publisher)
+{
+	this->name = book.name;
+	this->kind = book.kind;
+	this->organization = book.organization;
+	this->year = book.year;
+	this->address = publisher.address;
+	this->surname = publisher.surname;
+}
+
 void menu()
 {
 	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl;
@@ -264,28 +274,10 @@ void search()
 		{
 			try
 			{
-				BookNPublisher book = searchInFile("Краски", bookStream);
-				while (not(found or bookStream.eof()))
-				{
-
-				}
-				while (not(found or publisherStream.eof()))
-				{
-
-				}
-				//bool found(false);
-				//bool quite(false);
-
-				//std::string str;
-				//std::string fnd("Зоологический атлас");
-				//while (not(found or bookStream.eof()))
-				//{
-				//	std::getline(bookStream, str);
-				//	if (str.find(fnd) != -1) found = true;
-				//	index++;
-				//}
-				//std::cout << str << std::endl;
-				//std::cin.get();
+				BookNPublisher Book = searchInFile("Краски", bookStream);
+				BookNPublisher Publisher = searchInFile("Краски", publisherStream);
+				BookNPublisher FullData;
+				FullData.merge(Book, Publisher);
 			}
 			catch (std::exception& ex)
 			{

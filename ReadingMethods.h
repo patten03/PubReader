@@ -17,7 +17,7 @@ private:
 	std::string kind, organization, year;
 	std::string address, surname;
 public:
-	BookNPublisher merge(const BookNPublisher& book, const BookNPublisher& publisher);
+	void merge(const BookNPublisher& book, const BookNPublisher& publisher);
 	BookNPublisher();
 	BookNPublisher(const std::string& data);
 };
