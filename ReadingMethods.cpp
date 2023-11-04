@@ -2,9 +2,8 @@
 
 std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data)
 {
-	//size_t length = 15;
 	stream
-		<< data.name << "; "
+		<< data.name << "; " 
 		<< data.kind << "; "
 		<< data.organization << "; "
 		<< data.year << "; "
@@ -76,23 +75,6 @@ BookNPublisher::BookNPublisher(const std::string& data)
 		break;
 	}
 	}
-	//}
-	//if (tempFields.size() == 4)
-	//{
-	//	this->kind = tempFields[1];
-	//	this->organization = tempFields[2];
-	//	this->year = tempFields[3];
-	//	this->address = "None";
-	//	this->surname = "None";
-	//}
-	//else
-	//{
-	//	this->kind = "None";
-	//	this->organization = "None";
-	//	this->year = "None";
-	//	this->address = tempFields[1];
-	//	this->surname = tempFields[2];
-	//}
 }
 
 bool BookNPublisher::isEmpty()
@@ -103,7 +85,10 @@ bool BookNPublisher::isEmpty()
 
 void BookNPublisher::merge(const BookNPublisher& book, const BookNPublisher& publisher)
 {
-	this->name = book.name;
+	if (book.name != "None")
+		this->name = book.name;
+	else
+		this->name = publisher.name;
 	this->kind = book.kind;
 	this->organization = book.organization;
 	this->year = book.year;
@@ -171,10 +156,10 @@ int inputChoice(const int& end)
 	return choiceInt;
 }
 
-std::string askBook()
+std::string askString(const std::string& question)
 {
 	std::string res;
-	std::cout << "¬ведите название издани€, по которому хотите найти информацию" << std::endl;
+	std::cout << question << std::endl;
 	std::cout << ">>";
 	std::getline(std::cin, res);
 	system("cls");
@@ -332,13 +317,12 @@ void search()
 		bookStream.open(filename1, std::ios::in);
 		publisherStream.open(filename2, std::ios::in);
 
-
 		bool quite(false);
 		while (not(quite))
 		{
 			try
 			{
-				std::string searchBook = askBook();
+				std::string searchBook = askString("¬ведите название издани€, по которому хотите найти информацию");
 				BookNPublisher Book = searchInFile(searchBook, bookStream);
 				BookNPublisher Publisher = searchInFile(searchBook, publisherStream);
 				BookNPublisher FullData;
@@ -369,8 +353,6 @@ void search()
 				system("cls");
 			}
 		}
-
-
 
 		bookStream.close();
 		publisherStream.close();
@@ -410,5 +392,57 @@ BookNPublisher searchInFile(const std::string& book, std::fstream& file)
 
 void combineFiles()
 {
-	return;
+	std::string filename1, filename2;
+
+	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
+	{
+		std::string filenameMerged = askString("¬ведите как хотите назвать файл");
+		filenameMerged = filenameMerged + ".txt";
+
+		std::fstream bookStream, publisherStream, mergedStream;
+		bookStream.open(filename1, std::ios::in);
+		publisherStream.open(filename2, std::ios::in);
+		mergedStream.open(filenameMerged, std::ios::out);
+
+		std::vector<std::string> bookList1 = getAllBooks(bookStream);
+		std::vector<std::string> bookList2 = getAllBooks(publisherStream);
+		mergeBooks(bookList1, bookList2); // all books merged to bookList1
+
+		for (int i(0); i < bookList1.size(); i++)
+		{
+			BookNPublisher Book = searchInFile(bookList1[i], bookStream);
+			BookNPublisher Publisher = searchInFile(bookList1[i], publisherStream);
+			BookNPublisher FullData;
+			FullData.merge(Book, Publisher);
+			mergedStream << FullData << std::endl;
+		}
+
+		bookStream.close();
+		publisherStream.close();
+		mergedStream.close();
+	}
+}
+
+std::vector<std::string> getAllBooks(std::fstream& file)
+{
+	std::vector<std::string> res;
+	while (not(file.eof()))
+	{
+		std::string temp;
+		std::getline(file, temp, ';');
+		temp = upperCase(temp);
+		res.push_back(temp);
+		file.ignore(256, '\n');
+	}
+	res.erase(res.end() - 1);
+	file.clear();
+	return res;
+}
+
+std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2)
+{
+	bookList1.insert(bookList1.end(), bookList2.begin(), bookList2.end());
+	sort(bookList1.begin(), bookList1.end());
+	bookList1.erase(unique(bookList1.begin(), bookList1.end()), bookList1.end()); // unique return as last element
+	return bookList1;
 }

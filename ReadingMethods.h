@@ -43,5 +43,7 @@ std::string askBook();
 BookNPublisher searchInFile(const std::string& book, std::fstream& file);
 
 void combineFiles();
+std::vector<std::string> getAllBooks(std::fstream& file);
+std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2);
 
 #endif //READINGMETHODS
