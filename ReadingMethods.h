@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <windows.h>
 #include <fstream>
+#include <iomanip>
 
 enum fileType { none = 0, book = 1, publisher = 2 };
 
@@ -20,6 +21,8 @@ public:
 	void merge(const BookNPublisher& book, const BookNPublisher& publisher);
 	BookNPublisher();
 	BookNPublisher(const std::string& data);
+	bool isEmpty();
+	friend std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data);
 };
 
 void standartSettings();
@@ -36,6 +39,7 @@ std::string upperCase(const std::string& word);
 void menu();
 
 void search();
+std::string askBook();
 BookNPublisher searchInFile(const std::string& book, std::fstream& file);
 
 void combineFiles();

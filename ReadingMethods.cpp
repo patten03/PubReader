@@ -1,5 +1,18 @@
 #include "ReadingMethods.h"
 
+std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data)
+{
+	//size_t length = 15;
+	stream
+		<< data.name << "; "
+		<< data.kind << "; "
+		<< data.organization << "; "
+		<< data.year << "; "
+		<< data.address << "; "
+		<< data.surname;
+	return stream;
+}
+
 void standartSettings()
 {
 	SetConsoleCP(1251);
@@ -28,22 +41,64 @@ BookNPublisher::BookNPublisher(const std::string& data)
 	tempFields.push_back(tempData);
 
 	this->name = tempFields[0];
-	if (tempFields.size() == 4)
+	switch (tempFields.size())
 	{
-		this->kind = tempFields[1];
-		this->organization = tempFields[2];
-		this->year = tempFields[3];
-		this->address = "None";
-		this->surname = "None";
-	}
-	else
+	case 3:
 	{
 		this->kind = "None";
 		this->organization = "None";
 		this->year = "None";
 		this->address = tempFields[1];
 		this->surname = tempFields[2];
+		break;
 	}
+	case 4:
+	{
+		this->kind = tempFields[1];
+		this->organization = tempFields[2];
+		this->year = tempFields[3];
+		this->address = "None";
+		this->surname = "None";
+		break;
+	}
+	case 6:
+	{
+		this->kind = tempFields[1];
+		this->organization = tempFields[2];
+		this->year = tempFields[3];
+		this->address = tempFields[4];
+		this->surname = tempFields[5];
+		break;
+	}
+	default:
+	{
+		throw std::invalid_argument("Пустая строка или некорректные данные");
+		break;
+	}
+	}
+	//}
+	//if (tempFields.size() == 4)
+	//{
+	//	this->kind = tempFields[1];
+	//	this->organization = tempFields[2];
+	//	this->year = tempFields[3];
+	//	this->address = "None";
+	//	this->surname = "None";
+	//}
+	//else
+	//{
+	//	this->kind = "None";
+	//	this->organization = "None";
+	//	this->year = "None";
+	//	this->address = tempFields[1];
+	//	this->surname = tempFields[2];
+	//}
+}
+
+bool BookNPublisher::isEmpty()
+{
+	if (this->name == "None") return true;
+	else return false;
 }
 
 void BookNPublisher::merge(const BookNPublisher& book, const BookNPublisher& publisher)
@@ -114,6 +169,16 @@ int inputChoice(const int& end)
 	system("cls");
 
 	return choiceInt;
+}
+
+std::string askBook()
+{
+	std::string res;
+	std::cout << "Введите название издания, по которому хотите найти информацию" << std::endl;
+	std::cout << ">>";
+	std::getline(std::cin, res);
+	system("cls");
+	return res;
 }
 
 void ask(const std::vector<std::string> choice)
@@ -268,20 +333,40 @@ void search()
 		publisherStream.open(filename2, std::ios::in);
 
 
-		bool found(false);
 		bool quite(false);
 		while (not(quite))
 		{
 			try
 			{
-				BookNPublisher Book = searchInFile("Краски", bookStream);
-				BookNPublisher Publisher = searchInFile("Краски", publisherStream);
+				std::string searchBook = askBook();
+				BookNPublisher Book = searchInFile(searchBook, bookStream);
+				BookNPublisher Publisher = searchInFile(searchBook, publisherStream);
 				BookNPublisher FullData;
 				FullData.merge(Book, Publisher);
+				if (FullData.isEmpty()) throw std::exception("Ничего не найдено!");
+
+				std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
+				std::cout << FullData << std::endl;
+
+				std::vector<std::string> question{
+					"Найти другое издание",
+					"Выйти в главное меню"
+				};
+				ask(question);
+				int answer(inputChoice(question.size()));
+				if (answer == 2) quite = true;
 			}
 			catch (std::exception& ex)
 			{
-
+				std::cout << ex.what() << std::endl;
+				std::vector<std::string> question{
+					"Попытаться снова",
+					"Выйти в главное меню"
+				};
+				ask(question);
+				int answer(inputChoice(question.size()));
+				if (answer == 2) quite = true;
+				system("cls");
 			}
 		}
 
@@ -294,14 +379,19 @@ void search()
 
 BookNPublisher searchInFile(const std::string& book, std::fstream& file)
 {
-
+	file.clear();
+	file.seekp(0, file.beg);
 	std::string dataRes;
 	bool found(false);
 	std::string bookTemp = upperCase(book);
 	while (not(found or file.eof()))
 	{
 		std::getline(file, dataRes);
-		if (upperCase(dataRes).find(bookTemp) != -1)
+		int beg = 0;
+		int end = dataRes.find(";");
+		//if (upperCase(dataRes).find(bookTemp) != -1) // search by each field, not only name of book
+		//	found = true;
+		if (upperCase(dataRes.substr(beg, end)).find(bookTemp) != -1)
 			found = true;
 	}
 
