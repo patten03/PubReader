@@ -257,8 +257,6 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 	filename1 = "";
 	filename2 = "";
 
-	std::cout << "Выберите 2 файла для работы с ними:" << std::endl;
-
 	std::vector<std::string> twoFilesQuestion{
 	"Далее",
 	"Выбрать файл издания\n(Не выбран)",
@@ -273,13 +271,21 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 	{
 		try
 		{
+			std::cout << "Выберите 2 файла для работы с ними:" << std::endl;
+
 			ask(twoFilesQuestion);
 			int choice = inputChoice(twoFilesQuestion.size());
 
 			switch (choice)
 			{
 			case 1: 
-				if (filename1 != "" and filename2 != "") isChoosen = true; break; //required some exception
+			{
+				if (filename1 != "" and filename2 != "")
+					isChoosen = true;
+				else
+					throw std::exception("Выберите все файлы!");
+				break; //required some exception
+			}
 			case 2:
 			{
 				filename1 = findFile(book);
