@@ -396,35 +396,46 @@ void combineFiles()
 
 	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
 	{
-		//std::string filenameMerged = askString("Введите как хотите назвать файл");
-		//filenameMerged = filenameMerged + ".txt";
-		std::string filenameMerged = askFullPath();
-
-		std::fstream bookStream, publisherStream, mergedStream;
-		bookStream.open(filename1, std::ios::in);
-		publisherStream.open(filename2, std::ios::in);
-		mergedStream.open(filenameMerged, std::ios::out);
-
-		std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
-		std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
-		mergeBooks(bookList1, bookList2); // all books merged to bookList1
-
-		for (int i(0); i < bookList1.size(); i++)
+		bool approved(false);
+		while (!approved)
 		{
-			BookNPublisher Book = searchInFile(bookList1[i], bookStream);
-			BookNPublisher Publisher = searchInFile(bookList1[i], publisherStream);
-			BookNPublisher FullData;
-			FullData.merge(Book, Publisher);
-			mergedStream << FullData << std::endl;
+			try
+			{
+				std::string filenameMerged = askFullPath();
+
+				std::fstream bookStream, publisherStream, mergedStream;
+				bookStream.open(filename1, std::ios::in);
+				publisherStream.open(filename2, std::ios::in);
+				mergedStream.open(filenameMerged, std::ios::out);
+				if (!mergedStream.is_open()) throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
+
+				std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
+				std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
+				mergeBooks(bookList1, bookList2); // all books merged to bookList1
+
+				for (int i(0); i < bookList1.size(); i++)
+				{
+					BookNPublisher Book = searchInFile(bookList1[i], bookStream);
+					BookNPublisher Publisher = searchInFile(bookList1[i], publisherStream);
+					BookNPublisher FullData;
+					FullData.merge(Book, Publisher);
+					mergedStream << FullData << std::endl;
+				}
+
+				bookStream.close();
+				publisherStream.close();
+				mergedStream.close();
+
+				std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
+				std::cin.get();
+				system("cls");
+				approved = true;
+			}
+			catch (std::exception& ex)
+			{
+				std::cout << ex.what() << std::endl;
+			}
 		}
-
-		bookStream.close();
-		publisherStream.close();
-		mergedStream.close();
-
-		std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
-		std::cin.get();
-		system("cls");
 	}
 }
 
