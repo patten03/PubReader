@@ -284,7 +284,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 					isChoosen = true;
 				else
 					throw std::exception("Âûבונטעו גסו פאיכû!");
-				break; //required some exception
+				break;
 			}
 			case 2:
 			{
@@ -454,7 +454,7 @@ std::string askFullPath()
 	filename = space2underscore(filename);
 	filename = filename + "_" + currentTime();
 
-	std::string fullPath = folder + "\\" + filename + ".txt";
+	std::string fullPath = folder + "\\" + filename + "{a}.txt";
 
 	system("cls");
 	return fullPath;
