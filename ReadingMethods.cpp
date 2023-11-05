@@ -396,16 +396,17 @@ void combineFiles()
 
 	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
 	{
-		std::string filenameMerged = askString("Введите как хотите назвать файл");
-		filenameMerged = filenameMerged + ".txt";
+		//std::string filenameMerged = askString("Введите как хотите назвать файл");
+		//filenameMerged = filenameMerged + ".txt";
+		std::string filenameMerged = askFullPath();
 
 		std::fstream bookStream, publisherStream, mergedStream;
 		bookStream.open(filename1, std::ios::in);
 		publisherStream.open(filename2, std::ios::in);
 		mergedStream.open(filenameMerged, std::ios::out);
 
-		std::vector<std::string> bookList1 = getAllBooks(bookStream);
-		std::vector<std::string> bookList2 = getAllBooks(publisherStream);
+		std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
+		std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
 		mergeBooks(bookList1, bookList2); // all books merged to bookList1
 
 		for (int i(0); i < bookList1.size(); i++)
@@ -423,7 +424,22 @@ void combineFiles()
 	}
 }
 
-std::vector<std::string> getAllBooks(std::fstream& file)
+std::string askFullPath()
+{
+	std::cout << "Выберите папку, где будете хранить файл" << std::endl;
+	std::string folder = findFolder();
+	std::string filename = askString("Введите название файла");
+
+	filename = space2underscore(filename);
+	filename = filename + "_" + currentTime();
+
+	std::string fullPath = folder + "\\" + filename + ".txt";
+
+	system("cls");
+	return fullPath;
+}
+
+std::vector<std::string> recieveAllBooks(std::fstream& file)
 {
 	std::vector<std::string> res;
 	while (not(file.eof()))
@@ -445,4 +461,88 @@ std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::ve
 	sort(bookList1.begin(), bookList1.end());
 	bookList1.erase(unique(bookList1.begin(), bookList1.end()), bookList1.end()); // unique return as last element
 	return bookList1;
+}
+
+std::string findFolder()
+{
+	bool agree = false;
+	//std::string folder = "C:";
+	std::filesystem::path p = ".";
+	std::string folder = std::filesystem::absolute(p).string();
+
+	while (agree != true)
+	{
+		try
+		{
+			std::vector<std::string> folderList;
+			folderList.push_back("Выбрать текущую папку");
+			folderList[0] = folderList[0] + " (" + folder + ")";
+
+			folderList.push_back("Назад");
+
+			for (auto const& dirFolder : std::filesystem::directory_iterator(folder + "\\")) //maybe "\"
+			{
+				//"../../ghj.txt"
+				if (dirFolder.is_directory())
+				{
+					std::string path = dirFolder.path().string();
+					path = path.substr(path.rfind("\\") + 1, path.size());
+
+					folderList.push_back(path);
+				}
+			}
+
+			ask(folderList);
+			int choice = inputChoice(folderList.size());
+
+			switch (choice)
+			{
+			case 1: agree = true; break; //save current folder
+			case 2: folder = folder.substr(0, folder.rfind("\\")); break; //return from last folder
+			default: folder = folder + "\\" + folderList[choice - 1]; break;
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			std::cout << "Вы не можете выбрать этот файл или папку!" << std::endl;
+			folder = folder.substr(0, folder.rfind("\\"));
+		}
+	}
+	return folder;
+}
+
+std::string space2underscore(std::string text)
+{
+	std::replace(text.begin(), text.end(), ' ', '_');
+	return text;
+}
+
+std::string currentTime()
+{
+	std::string res;
+
+	std::time_t t = std::time(NULL);
+	std::tm now{};
+	localtime_s(&now, &t);
+
+	std::string date = std::to_string(now.tm_mday) + "_"
+		+ std::to_string(now.tm_mon + 1) + "_"
+		+ std::to_string(now.tm_year + 1900);
+
+
+	std::string clockTime;
+
+	if (now.tm_min < 10)
+	{
+		clockTime = std::to_string(now.tm_hour) + "_"
+			+ "0" + std::to_string(now.tm_min);
+	}
+	else
+	{
+		clockTime = std::to_string(now.tm_hour) + "_"
+			+ std::to_string(now.tm_min);
+	}
+
+	res = clockTime + "_" + date;
+	return res;
 }

@@ -35,15 +35,19 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2);
 std::string findFile(const fileType& type);
 fileType defineFileType(const std::string& filename);
 std::string upperCase(const std::string& word);
+std::string askString(const std::string& question);
 
 void menu();
 
 void search();
-std::string askBook();
 BookNPublisher searchInFile(const std::string& book, std::fstream& file);
 
 void combineFiles();
-std::vector<std::string> getAllBooks(std::fstream& file);
+std::vector<std::string> recieveAllBooks(std::fstream& file);
 std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2);
+std::string askFullPath();
+std::string findFolder();
+std::string space2underscore(std::string text);
+std::string currentTime();
 
 #endif //READINGMETHODS
