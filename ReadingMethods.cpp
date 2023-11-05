@@ -421,6 +421,10 @@ void combineFiles()
 		bookStream.close();
 		publisherStream.close();
 		mergedStream.close();
+
+		std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
+		std::cin.get();
+		system("cls");
 	}
 }
 
