@@ -120,6 +120,7 @@ void menu()
 		case 1: search(); break;
 		case 2: combineFiles(); break;
 		case 3: work = false; break;
+		default: throw std::invalid_argument("Некорректный формат ввода!");
 		}
 	}
 }
@@ -303,6 +304,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				break;
 			}
 			case 4: quit = true; break;
+			default: throw std::invalid_argument("Некорректный формат ввода!");
 			}
 		}
 		catch (std::exception& ex)
