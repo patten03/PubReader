@@ -169,12 +169,13 @@ std::string findFile(const fileType& type)
 	std::filesystem::path p = ".";
 	std::string filepath = std::filesystem::absolute(p).string();
 
-	while (filepath.find(".txt") == -1)
+	while (filepath.find(".txt") == -1 and filepath != "")
 	{
 		try
 		{
 			std::vector<std::string> folderList;
-			folderList.push_back("Назад");
+			folderList.push_back("Выйти из папки");
+			folderList.push_back("Возврат в меню");
 
 			for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "\\"))
 			{
@@ -198,6 +199,7 @@ std::string findFile(const fileType& type)
 			switch (choice)
 			{
 			case 1: filepath = filepath.substr(0, filepath.rfind("\\")); break; //return from last folder
+			case 2: filepath = ""; break;
 			default: filepath = filepath + "\\" + folderList[choice - 1]; break;
 			}
 		}
@@ -207,7 +209,6 @@ std::string findFile(const fileType& type)
 			filepath = filepath.substr(0, filepath.rfind("\\"));
 		}
 	}
-
 	return filepath;
 }
 
@@ -260,6 +261,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			case 1:
 			{
 				filename1 = findFile(book);
+				if (filename1 == "") break;
 				int index = twoFilesQuestion[1 - 1].find("(");
 				twoFilesQuestion[1 - 1].erase(index);
 				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); // appending filename to menu
@@ -268,6 +270,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			case 2: 
 			{
 				filename2 = findFile(publisher);
+				if (filename1 == "") break;
 				int index = twoFilesQuestion[2 - 1].find("(");
 				twoFilesQuestion[2 - 1].erase(index);
 				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); // appending filename to menu
