@@ -435,6 +435,7 @@ std::string askFullPath()
 	std::string fullPath = folder + "\\" + filename + "{a}.txt";
 
 	system("cls");
+	std::cout << "Файл под названием " << filename << " создан!" << std::endl;
 	return fullPath;
 }
 
