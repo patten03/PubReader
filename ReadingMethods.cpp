@@ -12,6 +12,35 @@ std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data)
 	return stream;
 }
 
+std::string searchByKeyword(const std::string& keyword, std::fstream& file, const fileType type)
+{
+	file.clear();
+	file.seekp(0, file.beg);
+	std::string dataRes;
+	bool found(false);
+	std::string bookTemp = upperCase(keyword);
+	while (not(found or file.eof()))
+	{
+		std::getline(file, dataRes);
+		int beg = 0;
+		int end = dataRes.find(";");
+		//if (upperCase(dataRes).find(bookTemp) != -1) // search by each field, not only name of book
+		//	found = true;
+		if (upperCase(dataRes.substr(beg, end)).find(bookTemp) != -1)
+			found = true;
+	}
+
+	if (found)
+	{
+		return dataRes;
+	}
+	else
+	{
+		if (type == book) return "None; None; None; None";
+		if (type == publisher) return "None; None; None";
+	}
+}
+
 void standartSettings()
 {
 	SetConsoleCP(1251);
@@ -95,6 +124,19 @@ void BookNPublisher::merge(const BookNPublisher& book, const BookNPublisher& pub
 	this->address = publisher.address;
 	this->surname = publisher.surname;
 }
+
+//void BookNPublisher::mergeData(const Book& book, const Publisher& publisher)
+//{
+//	if (book.name != "None")
+//		this->name = book.name;
+//	else
+//		this->name = publisher.name;
+//	this->kind = book.kind;
+//	this->organization = book.organization;
+//	this->year = book.year;
+//	this->address = publisher.address;
+//	this->surname = publisher.surname;
+//}
 
 void menu()
 {
@@ -328,15 +370,20 @@ void search()
 		{
 			try
 			{
-				std::string searchBook = askString("Введите название издания, по которому хотите найти информацию");
-				BookNPublisher Book = searchInFile(searchBook, bookStream);
-				BookNPublisher Publisher = searchInFile(searchBook, publisherStream);
-				BookNPublisher FullData;
-				FullData.merge(Book, Publisher);
-				if (FullData.isEmpty()) throw std::exception("Ничего не найдено!");
+				std::string searchWord = askString("Введите название издания, по которому хотите найти информацию");
 
-				std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
-				std::cout << FullData << std::endl;
+				Book Book;
+				Publisher Publisher;
+
+				std::string tempBookLine = searchByKeyword(searchWord, bookStream, book);
+				std::string tempPublisherLine = searchByKeyword(searchWord, publisherStream, publisher);
+
+				Publisher.read(tempPublisherLine);
+				Book.read(tempBookLine);
+
+				if (Book.name == "None" and Publisher.name == "None") throw std::exception("Ничего не найдено!");
+
+				outputCLI(Book, Publisher);
 
 				std::vector<std::string> question{
 					"Найти другое издание",
@@ -396,6 +443,26 @@ BookNPublisher searchInFile(const std::string& book, std::fstream& file)
 	
 }
 
+void outputCLI(const Book& Book, const Publisher& Publisher)
+{
+	const int width(35);
+
+	std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
+
+	std::string tempName;
+	if (Book.name == "None")
+		tempName = Publisher.name;
+	else
+		tempName = Book.name;
+	std::cout << std::left
+		<< std::setw(width) << "   Название издания: " << tempName << std::endl
+		<< std::setw(width) << "   Вид издания: " << Book.kind << std::endl
+		<< std::setw(width) << "   Издающая организация: " << Book.organization << std::endl
+		<< std::setw(width) << "   Год издания: " << Book.year << std::endl
+		<< std::setw(width) << "   Адресс редакции: " << Publisher.address << std::endl
+		<< std::setw(width) << "   Фамилия главного редактора: " << Publisher.surname << std::endl;
+}
+
 void combineFiles()
 {
 	std::string filename1, filename2;
@@ -419,13 +486,29 @@ void combineFiles()
 				std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
 				mergeBooks(bookList1, bookList2); // all books merged to bookList1
 
-				for (int i(0); i < bookList1.size(); i++)
+				for (auto &name: bookList1)
 				{
-					BookNPublisher Book = searchInFile(bookList1[i], bookStream);
-					BookNPublisher Publisher = searchInFile(bookList1[i], publisherStream);
-					BookNPublisher FullData;
-					FullData.merge(Book, Publisher);
-					mergedStream << FullData << std::endl;
+					Book Book;
+					Publisher Publisher;
+					std::string tempBookLine = searchByKeyword(name, bookStream, book);
+					std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
+					Book.read(tempBookLine);
+					Publisher.read(tempPublisherLine);
+
+					std::string tempName;
+					if (Book.name == "None")
+						tempName = Publisher.name;
+					else
+						tempName = Book.name;
+
+					mergedStream
+						<< tempName << std::endl
+						<< Book.kind << std::endl
+						<< Book.organization << std::endl
+						<< Book.year << std::endl
+						<< Publisher.address << std::endl
+						<< Publisher.surname << std::endl << std::endl;
+
 				}
 
 				bookStream.close();
@@ -566,4 +649,41 @@ std::string currentTime()
 
 	res = clockTime + "_" + date;
 	return res;
+}
+
+void Publisher::read(std::string& line)
+{
+	std::string delimiter = "; ";
+	size_t pos = 0;
+
+	std::string buff[3];
+	line = line + ";";
+	for (auto& field : buff)
+	{
+		pos = line.find(delimiter);
+		field = line.substr(0, pos);
+		line.erase(0, pos + delimiter.length());
+	}
+	this->name = buff[0];
+	this->address = buff[1];
+	this->surname = buff[2].substr(0, buff[2].size() - 1);
+}
+
+void Book::read(std::string& line)
+{
+	std::string delimiter = "; ";
+	size_t pos = 0;
+
+	std::string buff[4];
+	line = line + ";";
+	for (auto& field : buff)
+	{
+		pos = line.find(delimiter);
+		field = line.substr(0, pos);
+		line.erase(0, pos + delimiter.length());
+	}
+	this->name = buff[0];
+	this->kind = buff[1];
+	this->organization = buff[2];
+	this->year = buff[3].substr(0, buff[3].size() - 1);
 }
