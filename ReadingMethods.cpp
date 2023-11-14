@@ -47,8 +47,7 @@ void menu()
 		std::cout << "Выберите задачу, которую хотите выполнить:" << std::endl;
 
 		std::vector<std::string> menuQuestions{
-			"Найти все данные по названию книги",
-			"Сгруппировать информацию из двух файлов",
+			"Выбрать два файла для поиска данных",
 			"Выйти из программы"
 		};
 
@@ -57,10 +56,43 @@ void menu()
 
 		switch (choice)
 		{
-		case 1: search(); break;
-		case 2: combineFiles(); break;
-		case 3: work = false; break;
+		case 1: subMenu(); break;
+		case 2: work = false; break;
 		default: throw std::invalid_argument("Некорректный формат ввода!");
+		}
+	}
+}
+
+void subMenu()
+{
+	static std::string filename1("");
+	static std::string filename2("");
+	bool isChoosen(false);
+	bool quit(false);
+
+	while (!isChoosen and !quit)
+	{
+		quit = !chooseTwoFiles(filename1, filename2);
+
+		isChoosen = true;
+		if (!quit)
+		{
+			std::cout << "Выберите действие:" << std::endl;
+			std::vector<std::string> menuQuestions{
+				"Найти все данные по названию книги",
+				"Сгруппировать информацию из двух файлов",
+				"Возврат к выбору файлов"
+			};
+			ask(menuQuestions);
+			int choice = inputChoice(menuQuestions.size());
+
+			switch (choice)
+			{
+			case 1: search(filename1, filename2); break;
+			case 2: combineFiles(filename1, filename2); break;
+			case 3: isChoosen = false; break;
+			default: throw std::invalid_argument("Некорректный формат ввода!");
+			}
 		}
 	}
 }
@@ -193,16 +225,11 @@ std::string upperCase(const std::string& word)
 @brief function return true, if files is choosen, otherwise false
 */
 bool chooseTwoFiles(std::string& filename1, std::string& filename2)
-
 {
-	filename1 = "";
-	filename2 = "";
-
-	std::vector<std::string> twoFilesQuestion{
-	"Далее",
-	"Выбрать файл издания\n(Не выбран)",
-	"Выбрать файл редакции\n(Не выбран)",
-	"Выйти в главное меню"
+	static std::vector<std::string> twoFilesQuestion{
+		"Выбрать файл издания\n(Не выбран)",
+		"Выбрать файл редакции\n(Не выбран)",
+		"Выйти в главное меню"
 	};
 
 	bool isChoosen(false);
@@ -210,6 +237,9 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 
 	while (not(isChoosen or quit))
 	{
+		if (filename1 != "" and filename2 != "" and twoFilesQuestion.size() < 4)
+			twoFilesQuestion.push_back("Работать с выбранными файлами");
+
 		try
 		{
 			std::cout << "Выберите 2 файла для работы с ними:" << std::endl;
@@ -219,7 +249,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 
 			switch (choice)
 			{
-			case 1: 
+			case 4: 
 			{
 				if (filename1 != "" and filename2 != "")
 					isChoosen = true;
@@ -227,23 +257,23 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 					throw std::exception("Выберите все файлы!");
 				break;
 			}
-			case 2:
+			case 1:
 			{
 				filename1 = findFile(book);
-				int index = twoFilesQuestion[2 - 1].find("(");
-				twoFilesQuestion[2 - 1].erase(index);
-				twoFilesQuestion[2 - 1].append("(" + filename1 + ")"); // appending filename to menu
+				int index = twoFilesQuestion[1 - 1].find("(");
+				twoFilesQuestion[1 - 1].erase(index);
+				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); // appending filename to menu
 				break;
 			}
-			case 3: 
+			case 2: 
 			{
 				filename2 = findFile(publisher);
-				int index = twoFilesQuestion[3 - 1].find("(");
-				twoFilesQuestion[3 - 1].erase(index);
-				twoFilesQuestion[3 - 1].append("(" + filename2 + ")"); // appending filename to menu
+				int index = twoFilesQuestion[2 - 1].find("(");
+				twoFilesQuestion[2 - 1].erase(index);
+				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); // appending filename to menu
 				break;
 			}
-			case 4: quit = true; break;
+			case 3: quit = true; break;
 			default: throw std::invalid_argument("Некорректный формат ввода!");
 			}
 		}
@@ -255,61 +285,56 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 	return isChoosen;
 }
 
-void search()
+void search(const std::string &filename1, const std::string& filename2)
 {
-	std::string filename1, filename2;
+	std::fstream bookStream, publisherStream;
+	bookStream.open(filename1, std::ios::in);
+	publisherStream.open(filename2, std::ios::in);
 
-	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
+	bool quite(false);
+	while (not(quite))
 	{
-		std::fstream bookStream, publisherStream;
-		bookStream.open(filename1, std::ios::in);
-		publisherStream.open(filename2, std::ios::in);
-
-		bool quite(false);
-		while (not(quite))
+		try
 		{
-			try
-			{
-				std::string searchWord = askString("Введите название издания, по которому хотите найти информацию");
+			std::string searchWord = askString("Введите название издания, по которому хотите найти информацию");
 
-				Book Book;
-				Publisher Publisher;
+			Book Book;
+			Publisher Publisher;
 
-				std::string tempBookLine = searchByKeyword(searchWord, bookStream, book);
-				std::string tempPublisherLine = searchByKeyword(searchWord, publisherStream, publisher);
+			std::string tempBookLine = searchByKeyword(searchWord, bookStream, book);
+			std::string tempPublisherLine = searchByKeyword(searchWord, publisherStream, publisher);
 
-				Publisher.read(tempPublisherLine);
-				Book.read(tempBookLine);
+			Publisher.read(tempPublisherLine);
+			Book.read(tempBookLine);
 
-				if (Book.name == "None" and Publisher.name == "None") throw std::exception("Ничего не найдено!");
+			if (Book.name == "None" and Publisher.name == "None") throw std::exception("Ничего не найдено!");
 
-				outputCLI(Book, Publisher);
+			outputCLI(Book, Publisher);
 
-				std::vector<std::string> question{
-					"Найти другое издание",
-					"Выйти в главное меню"
-				};
-				ask(question);
-				int answer(inputChoice(question.size()));
-				if (answer == 2) quite = true;
-			}
-			catch (std::exception& ex)
-			{
-				std::cout << ex.what() << std::endl;
-				std::vector<std::string> question{
-					"Попытаться снова",
-					"Выйти в главное меню"
-				};
-				ask(question);
-				int answer(inputChoice(question.size()));
-				if (answer == 2) quite = true;
-				system("cls");
-			}
+			std::vector<std::string> question{
+				"Найти другое издание",
+				"Выйти в главное меню"
+			};
+			ask(question);
+			int answer(inputChoice(question.size()));
+			if (answer == 2) quite = true;
 		}
-
-		bookStream.close();
-		publisherStream.close();
+		catch (std::exception& ex)
+		{
+			std::cout << ex.what() << std::endl;
+			std::vector<std::string> question{
+				"Попытаться снова",
+				"Выйти в главное меню"
+			};
+			ask(question);
+			int answer(inputChoice(question.size()));
+			if (answer == 2) quite = true;
+			system("cls");
+		}
 	}
+
+	bookStream.close();
+	publisherStream.close();
 }
 
 void outputCLI(const Book& Book, const Publisher& Publisher)
@@ -332,66 +357,61 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 		<< std::setw(width) << "   Фамилия главного редактора: " << Publisher.surname << std::endl;
 }
 
-void combineFiles()
+void combineFiles(const std::string& filename1, const std::string& filename2)
 {
-	std::string filename1, filename2;
-
-	if (chooseTwoFiles(filename1, filename2)) // chooseTwoFiles define should it works or quits
+	bool approved(false);
+	while (!approved)
 	{
-		bool approved(false);
-		while (!approved)
+		try
 		{
-			try
+			std::string filenameMerged = askFullPath();
+
+			std::fstream bookStream, publisherStream, mergedStream;
+			bookStream.open(filename1, std::ios::in);
+			publisherStream.open(filename2, std::ios::in);
+			mergedStream.open(filenameMerged, std::ios::out);
+			if (!mergedStream.is_open()) throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
+
+			std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
+			std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
+			mergeBooks(bookList1, bookList2); // all books merged to bookList1
+
+			for (auto &name: bookList1)
 			{
-				std::string filenameMerged = askFullPath();
+				Book Book;
+				Publisher Publisher;
+				std::string tempBookLine = searchByKeyword(name, bookStream, book);
+				std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
+				Book.read(tempBookLine);
+				Publisher.read(tempPublisherLine);
 
-				std::fstream bookStream, publisherStream, mergedStream;
-				bookStream.open(filename1, std::ios::in);
-				publisherStream.open(filename2, std::ios::in);
-				mergedStream.open(filenameMerged, std::ios::out);
-				if (!mergedStream.is_open()) throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
+				std::string tempName;
+				if (Book.name == "None")
+					tempName = Publisher.name;
+				else
+					tempName = Book.name;
 
-				std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
-				std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
-				mergeBooks(bookList1, bookList2); // all books merged to bookList1
-
-				for (auto &name: bookList1)
-				{
-					Book Book;
-					Publisher Publisher;
-					std::string tempBookLine = searchByKeyword(name, bookStream, book);
-					std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
-					Book.read(tempBookLine);
-					Publisher.read(tempPublisherLine);
-
-					std::string tempName;
-					if (Book.name == "None")
-						tempName = Publisher.name;
-					else
-						tempName = Book.name;
-
-					mergedStream
-						<< tempName << std::endl
-						<< Book.kind << std::endl
-						<< Book.organization << std::endl
-						<< Book.year << std::endl
-						<< Publisher.address << std::endl
-						<< Publisher.surname << std::endl << std::endl;
-				}
-
-				bookStream.close();
-				publisherStream.close();
-				mergedStream.close();
-
-				std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
-				std::cin.get();
-				system("cls");
-				approved = true;
+				mergedStream
+					<< tempName << std::endl
+					<< Book.kind << std::endl
+					<< Book.organization << std::endl
+					<< Book.year << std::endl
+					<< Publisher.address << std::endl
+					<< Publisher.surname << std::endl << std::endl;
 			}
-			catch (std::exception& ex)
-			{
-				std::cout << ex.what() << std::endl;
-			}
+
+			bookStream.close();
+			publisherStream.close();
+			mergedStream.close();
+
+			std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
+			std::cin.get();
+			system("cls");
+			approved = true;
+		}
+		catch (std::exception& ex)
+		{
+			std::cout << ex.what() << std::endl;
 		}
 	}
 }

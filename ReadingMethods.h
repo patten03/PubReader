@@ -40,11 +40,12 @@ std::string upperCase(const std::string& word);
 std::string askString(const std::string& question);
 
 void menu();
+void subMenu();
 
-void search();
+void search(const std::string& filename1, const std::string& filename2);
 void outputCLI(const Book& Book, const Publisher& Publisher);
 
-void combineFiles();
+void combineFiles(const std::string& filename1, const std::string& filename2);
 std::vector<std::string> recieveAllBooks(std::fstream& file);
 std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2);
 std::string askFullPath();
