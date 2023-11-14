@@ -414,30 +414,6 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 			std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
 			mergeBooks(bookList1, bookList2); // all books merged to bookList1
 
-			//for (auto &name: bookList1)
-			//{
-			//	Book Book;
-			//	Publisher Publisher;
-			//	std::string tempBookLine = searchByKeyword(name, bookStream, book);
-			//	std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
-			//	Book.read(tempBookLine);
-			//	Publisher.read(tempPublisherLine);
-
-			//	std::string tempName;
-			//	if (Book.name == "None")
-			//		tempName = Publisher.name;
-			//	else
-			//		tempName = Book.name;
-
-			//	mergedStream
-			//		<< tempName << std::endl
-			//		<< Book.kind << std::endl
-			//		<< Book.organization << std::endl
-			//		<< Book.year << std::endl
-			//		<< Publisher.address << std::endl
-			//		<< Publisher.surname << std::endl << std::endl;
-			//}
-
 			outputHTML(bookList1, bookStream, publisherStream, mergedStream);
 
 			bookStream.close();
