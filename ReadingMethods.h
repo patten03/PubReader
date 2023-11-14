@@ -11,21 +11,6 @@
 
 enum fileType { none = 0, book = 1, publisher = 2 };
 
-class BookNPublisher
-{
-private:
-	std::string name;
-	std::string kind, organization, year;
-	std::string address, surname;
-public:
-	void merge(const BookNPublisher& book, const BookNPublisher& publisher);
-	//void mergeData(const Book& book, const Publisher& publisher);
-	BookNPublisher();
-	BookNPublisher(const std::string& data);
-	bool isEmpty();
-	friend std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data);
-};
-
 struct Book
 {
 	void read(std::string& line);
@@ -57,7 +42,6 @@ std::string askString(const std::string& question);
 void menu();
 
 void search();
-BookNPublisher searchInFile(const std::string& book, std::fstream& file);
 void outputCLI(const Book& Book, const Publisher& Publisher);
 
 void combineFiles();

@@ -1,17 +1,5 @@
 #include "ReadingMethods.h"
 
-std::ostream& operator<<(std::ostream& stream, const BookNPublisher& data)
-{
-	stream
-		<< data.name << "; " 
-		<< data.kind << "; "
-		<< data.organization << "; "
-		<< data.year << "; "
-		<< data.address << "; "
-		<< data.surname;
-	return stream;
-}
-
 std::string searchByKeyword(const std::string& keyword, std::fstream& file, const fileType type)
 {
 	file.clear();
@@ -47,96 +35,6 @@ void standartSettings()
 	SetConsoleOutputCP(1251);
 	std::setlocale(LC_ALL, "ru");
 }
-
-BookNPublisher::BookNPublisher()
-{
-	this->name = "None";
-	this->kind = this->organization = this->year = "None";
-	this->address = this->surname = "None";
-}
-
-BookNPublisher::BookNPublisher(const std::string& data)
-{
-	std::string tempData = data;
-	std::vector<std::string> tempFields;
-
-	std::string delimiter = "; ";
-	size_t pos = 0;
-	while ((pos = tempData.find(delimiter)) != -1) {
-		tempFields.push_back(tempData.substr(0, pos));
-		tempData.erase(0, pos + delimiter.length());
-	}
-	tempFields.push_back(tempData);
-
-	this->name = tempFields[0];
-	switch (tempFields.size())
-	{
-	case 3:
-	{
-		this->kind = "None";
-		this->organization = "None";
-		this->year = "None";
-		this->address = tempFields[1];
-		this->surname = tempFields[2];
-		break;
-	}
-	case 4:
-	{
-		this->kind = tempFields[1];
-		this->organization = tempFields[2];
-		this->year = tempFields[3];
-		this->address = "None";
-		this->surname = "None";
-		break;
-	}
-	case 6:
-	{
-		this->kind = tempFields[1];
-		this->organization = tempFields[2];
-		this->year = tempFields[3];
-		this->address = tempFields[4];
-		this->surname = tempFields[5];
-		break;
-	}
-	default:
-	{
-		throw std::invalid_argument("Пустая строка или некорректные данные");
-		break;
-	}
-	}
-}
-
-bool BookNPublisher::isEmpty()
-{
-	if (this->name == "None") return true;
-	else return false;
-}
-
-void BookNPublisher::merge(const BookNPublisher& book, const BookNPublisher& publisher)
-{
-	if (book.name != "None")
-		this->name = book.name;
-	else
-		this->name = publisher.name;
-	this->kind = book.kind;
-	this->organization = book.organization;
-	this->year = book.year;
-	this->address = publisher.address;
-	this->surname = publisher.surname;
-}
-
-//void BookNPublisher::mergeData(const Book& book, const Publisher& publisher)
-//{
-//	if (book.name != "None")
-//		this->name = book.name;
-//	else
-//		this->name = publisher.name;
-//	this->kind = book.kind;
-//	this->organization = book.organization;
-//	this->year = book.year;
-//	this->address = publisher.address;
-//	this->surname = publisher.surname;
-//}
 
 void menu()
 {
@@ -412,37 +310,6 @@ void search()
 	}
 }
 
-BookNPublisher searchInFile(const std::string& book, std::fstream& file)
-{
-	file.clear();
-	file.seekp(0, file.beg);
-	std::string dataRes;
-	bool found(false);
-	std::string bookTemp = upperCase(book);
-	while (not(found or file.eof()))
-	{
-		std::getline(file, dataRes);
-		int beg = 0;
-		int end = dataRes.find(";");
-		//if (upperCase(dataRes).find(bookTemp) != -1) // search by each field, not only name of book
-		//	found = true;
-		if (upperCase(dataRes.substr(beg, end)).find(bookTemp) != -1)
-			found = true;
-	}
-
-	if (found)
-	{
-		BookNPublisher res(dataRes);
-		return res;
-	}
-	else
-	{
-		BookNPublisher res;
-		return res;
-	}
-	
-}
-
 void outputCLI(const Book& Book, const Publisher& Publisher)
 {
 	const int width(35);
@@ -508,7 +375,6 @@ void combineFiles()
 						<< Book.year << std::endl
 						<< Publisher.address << std::endl
 						<< Publisher.surname << std::endl << std::endl;
-
 				}
 
 				bookStream.close();
