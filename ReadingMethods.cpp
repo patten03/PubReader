@@ -70,12 +70,12 @@ void subMenu()
 	bool isChoosen(false);
 	bool quit(false);
 
-	while (!isChoosen and !quit)
+	while (!isChoosen)
 	{
 		quit = !chooseTwoFiles(filename1, filename2);
 
 		isChoosen = true;
-		if (!quit)
+		while (!quit and isChoosen)
 		{
 			std::cout << "Выберите действие:" << std::endl;
 			std::vector<std::string> menuQuestions{
@@ -90,7 +90,7 @@ void subMenu()
 			{
 			case 1: search(filename1, filename2); break;
 			case 2: combineFiles(filename1, filename2); break;
-			case 3: isChoosen = false; break;
+			case 3: isChoosen = quit = false; break;
 			default: throw std::invalid_argument("Некорректный формат ввода!");
 			}
 		}
@@ -242,7 +242,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 
 		try
 		{
-			std::cout << "Выберите 2 файла для работы с ними:" << std::endl;
+			std::cout << "Выберите 2 файла для работы:" << std::endl;
 
 			ask(twoFilesQuestion);
 			int choice = inputChoice(twoFilesQuestion.size());
@@ -365,6 +365,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		try
 		{
 			std::string filenameMerged = askFullPath();
+			if (filenameMerged == "None") return;
 
 			std::fstream bookStream, publisherStream, mergedStream;
 			bookStream.open(filename1, std::ios::in);
@@ -420,6 +421,9 @@ std::string askFullPath()
 {
 	std::cout << "Выберите папку, где будете хранить файл" << std::endl;
 	std::string folder = findFolder();
+	if (folder == "")
+		return "None";
+
 	std::string filename = askString("Введите название файла");
 
 	filename = space2underscore(filename);
@@ -470,7 +474,8 @@ std::string findFolder()
 			folderList.push_back("Выбрать текущую папку");
 			folderList[0] = folderList[0] + " (" + folder + ")";
 
-			folderList.push_back("Назад");
+			folderList.push_back("Выйти из папки");
+			folderList.push_back("Возврат в меню");
 
 			for (auto const& dirFolder : std::filesystem::directory_iterator(folder + "\\")) //maybe "\"
 			{
@@ -491,6 +496,12 @@ std::string findFolder()
 			{
 			case 1: agree = true; break; //save current folder
 			case 2: folder = folder.substr(0, folder.rfind("\\")); break; //return from last folder
+			case 3:
+			{
+				agree = true;
+				folder = "";
+				break;
+			}
 			default: folder = folder + "\\" + folderList[choice - 1]; break;
 			}
 		}
