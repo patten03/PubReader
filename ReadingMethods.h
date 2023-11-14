@@ -44,6 +44,9 @@ void subMenu();
 
 void search(const std::string& filename1, const std::string& filename2);
 void outputCLI(const Book& Book, const Publisher& Publisher);
+std::string row(const Book& B, const Publisher& P);
+std::string headerRow();
+void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 
 void combineFiles(const std::string& filename1, const std::string& filename2);
 std::vector<std::string> recieveAllBooks(std::fstream& file);

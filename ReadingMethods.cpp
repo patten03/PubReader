@@ -38,29 +38,8 @@ void standartSettings()
 
 void menu()
 {
-	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl;
-
-	bool work = true;
-
-	while (work)
-	{
-		std::cout << "Выберите задачу, которую хотите выполнить:" << std::endl;
-
-		std::vector<std::string> menuQuestions{
-			"Выбрать два файла для поиска данных",
-			"Выйти из программы"
-		};
-
-		ask(menuQuestions);
-		int choice = inputChoice(menuQuestions.size());
-
-		switch (choice)
-		{
-		case 1: subMenu(); break;
-		case 2: work = false; break;
-		default: throw std::invalid_argument("Некорректный формат ввода!");
-		}
-	}
+	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl << std::endl;
+	subMenu();
 }
 
 void subMenu()
@@ -230,7 +209,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 	static std::vector<std::string> twoFilesQuestion{
 		"Выбрать файл издания\n(Не выбран)",
 		"Выбрать файл редакции\n(Не выбран)",
-		"Выйти в главное меню"
+		"Выйти"
 	};
 
 	bool isChoosen(false);
@@ -360,6 +339,61 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 		<< std::setw(width) << "   Фамилия главного редактора: " << Publisher.surname << std::endl;
 }
 
+void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res)
+{
+	std::string top("<!DOCTYPE html><html><body><style> table, th, td{border:1px solid black;}</style><table>");
+
+	res << top << headerRow();
+
+	for (auto& name : bookList)
+	{
+		Book Book;
+		Publisher Publisher;
+		std::string tempBookLine = searchByKeyword(name, bStream, book);
+		std::string tempPublisherLine = searchByKeyword(name, pStream, publisher);
+		Book.read(tempBookLine);
+		Publisher.read(tempPublisherLine);
+
+		res << row(Book, Publisher);
+	}
+
+	std::string floor("</table></body>");
+	res << floor;
+}
+
+std::string headerRow()
+{
+	std::string res;
+	res = res + "<th>" + "Название издания" + "</th>";
+	res = res + "<th>" + "Вид издания" + "</th>";
+	res = res + "<th>" + "Издающая организация" + "</th>";
+	res = res + "<th>" + "Год издания" + "</th>";
+	res = res + "<th>" + "Адресс редакции" + "</th>";
+	res = res + "<th>" + "Фамилия главного редактора" + "</th>";
+	return res;
+}
+
+std::string row(const Book& B, const Publisher& P)
+{
+	std::string tempName;
+	if (B.name == "None")
+		tempName = P.name;
+	else
+		tempName = B.name;
+
+	std::string res;
+	res = res + "<tr>";
+	res = res + "<td>" + tempName + "</td>";
+	res = res + "<td>" + B.kind + "</td>";
+	res = res + "<td>" + B.organization + "</td>";
+	res = res + "<td>" + B.year + "</td>";
+	res = res + "<td>" + P.address + "</td>";
+	res = res + "<td>" + P.surname + "</td>";
+	res = res + "</tr>";
+
+	return res;
+}
+
 void combineFiles(const std::string& filename1, const std::string& filename2)
 {
 	bool approved(false);
@@ -380,29 +414,31 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 			std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
 			mergeBooks(bookList1, bookList2); // all books merged to bookList1
 
-			for (auto &name: bookList1)
-			{
-				Book Book;
-				Publisher Publisher;
-				std::string tempBookLine = searchByKeyword(name, bookStream, book);
-				std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
-				Book.read(tempBookLine);
-				Publisher.read(tempPublisherLine);
+			//for (auto &name: bookList1)
+			//{
+			//	Book Book;
+			//	Publisher Publisher;
+			//	std::string tempBookLine = searchByKeyword(name, bookStream, book);
+			//	std::string tempPublisherLine = searchByKeyword(name, publisherStream, publisher);
+			//	Book.read(tempBookLine);
+			//	Publisher.read(tempPublisherLine);
 
-				std::string tempName;
-				if (Book.name == "None")
-					tempName = Publisher.name;
-				else
-					tempName = Book.name;
+			//	std::string tempName;
+			//	if (Book.name == "None")
+			//		tempName = Publisher.name;
+			//	else
+			//		tempName = Book.name;
 
-				mergedStream
-					<< tempName << std::endl
-					<< Book.kind << std::endl
-					<< Book.organization << std::endl
-					<< Book.year << std::endl
-					<< Publisher.address << std::endl
-					<< Publisher.surname << std::endl << std::endl;
-			}
+			//	mergedStream
+			//		<< tempName << std::endl
+			//		<< Book.kind << std::endl
+			//		<< Book.organization << std::endl
+			//		<< Book.year << std::endl
+			//		<< Publisher.address << std::endl
+			//		<< Publisher.surname << std::endl << std::endl;
+			//}
+
+			outputHTML(bookList1, bookStream, publisherStream, mergedStream);
 
 			bookStream.close();
 			publisherStream.close();
@@ -432,7 +468,7 @@ std::string askFullPath()
 	filename = space2underscore(filename);
 	filename = filename + "_" + currentTime();
 
-	std::string fullPath = folder + "\\" + filename + "{a}.txt";
+	std::string fullPath = folder + "\\" + filename + ".html";
 
 	system("cls");
 	std::cout << "Файл под названием " << filename << " создан!" << std::endl;
