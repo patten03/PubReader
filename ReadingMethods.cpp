@@ -209,7 +209,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 	static std::vector<std::string> twoFilesQuestion{
 		"Выбрать файл издания\n(Не выбран)",
 		"Выбрать файл редакции\n(Не выбран)",
-		"Выйти"
+		"Выйти из программы"
 	};
 
 	bool isChoosen(false);
