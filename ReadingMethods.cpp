@@ -376,7 +376,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 			mergedStream.close();
 
 			std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
-			std::cin.get();
+			_getch();
 			system("cls");
 			approved = true;
 		}
