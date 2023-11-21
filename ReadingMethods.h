@@ -41,7 +41,7 @@ std::string upperCase(const std::string& word);
 std::string askString(const std::string& question);
 
 void menu();
-void subMenu();
+void menu();
 
 void search(const std::string& filename1, const std::string& filename2);
 void outputCLI(const Book& Book, const Publisher& Publisher);

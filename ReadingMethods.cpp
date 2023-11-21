@@ -84,11 +84,7 @@ void standartSettings()
 void menu()
 {
 	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl << std::endl;
-	subMenu();
-}
 
-void subMenu()
-{
 	static std::string filename1("");
 	static std::string filename2("");
 	bool isChoosen(false);
