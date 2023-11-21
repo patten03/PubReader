@@ -26,7 +26,7 @@ struct Publisher
 	std::string address, surname;
 };
 
-std::string searchByKeyword(const std::string& keyword, std::fstream& file, const fileType type);
+std::string searchByBook(const std::string& keyword, std::fstream& file, const fileType type);
 
 void standartSettings();
 

@@ -1,6 +1,6 @@
 #include "ReadingMethods.h"
 
-std::string searchByKeyword(const std::string& keyword, std::fstream& file, const fileType type)
+std::string searchByBook(const std::string& keyword, std::fstream& file, const fileType type)
 {
 	file.clear();
 	file.seekp(0, file.beg);
@@ -26,6 +26,51 @@ std::string searchByKeyword(const std::string& keyword, std::fstream& file, cons
 	{
 		if (type == book) return "None; None; None; None";
 		if (type == publisher) return "None; None; None";
+	}
+}
+
+std::vector<std::string> bookByKeyword(const std::string& keyword, std::fstream& file, const fileType type)
+{
+	file.clear();
+	file.seekp(0, file.beg);
+	std::vector<std::string> dataRes;
+	std::string tempLine = upperCase(keyword);
+	while (!file.eof())
+	{
+		std::string buff;
+		std::getline(file, buff);
+		if (upperCase(buff).find(tempLine) != -1) // search by each field, not only name of book
+		{
+			dataRes.push_back(buff.substr(0, buff.find(";")));
+		}
+	}
+	return dataRes;
+}
+
+void outSearchedBooks(std::vector<std::string> bookList, std::fstream& booksFile, std::fstream& pubsFile)
+{
+	int width(30);
+
+	if(bookList.size() == 0) throw std::exception("Ничего не найдено!");
+
+	std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
+	std::cout << std::string(width, '-');
+	std::cout << std::endl;
+
+	for (const auto& bookname : bookList)
+	{
+		std::string tempBookLine = searchByBook(bookname, booksFile, book);
+		std::string tempPublisherLine = searchByBook(bookname, pubsFile, publisher);
+
+		Book Book;
+		Publisher Publisher;
+
+		Publisher.read(tempPublisherLine);
+		Book.read(tempBookLine);
+
+		outputCLI(Book, Publisher);
+		std::cout << std::string(width, '-');
+		std::cout << std::endl;
 	}
 }
 
@@ -197,20 +242,13 @@ void search(const std::string &filename1, const std::string& filename2)
 	{
 		try
 		{
-			std::string searchWord = askString("Введите название издания, по которому хотите найти информацию");
+			std::string searchWord = askString("Введите ключевое слово, по которому хотите найти информацию");
 
-			Book Book;
-			Publisher Publisher;
+			std::vector<std::string> bookList1 = bookByKeyword(searchWord, bookStream, book);
+			std::vector<std::string> bookList2 = bookByKeyword(searchWord, publisherStream, publisher);
+			bookList1 = mergeBooks(bookList1, bookList2);
 
-			std::string tempBookLine = searchByKeyword(searchWord, bookStream, book);
-			std::string tempPublisherLine = searchByKeyword(searchWord, publisherStream, publisher);
-
-			Publisher.read(tempPublisherLine);
-			Book.read(tempBookLine);
-
-			if (Book.name == "None" and Publisher.name == "None") throw std::exception("Ничего не найдено!");
-
-			outputCLI(Book, Publisher);
+			outSearchedBooks(bookList1, bookStream, publisherStream);
 
 			std::vector<std::string> question{
 				"Найти другое издание",
@@ -242,8 +280,6 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 {
 	const int width(35);
 
-	std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
-
 	std::string tempName;
 	if (Book.name == "None")
 		tempName = Publisher.name;
@@ -268,8 +304,8 @@ void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, 
 	{
 		Book Book;
 		Publisher Publisher;
-		std::string tempBookLine = searchByKeyword(name, bStream, book);
-		std::string tempPublisherLine = searchByKeyword(name, pStream, publisher);
+		std::string tempBookLine = searchByBook(name, bStream, book);
+		std::string tempPublisherLine = searchByBook(name, pStream, publisher);
 		Book.read(tempBookLine);
 		Publisher.read(tempPublisherLine);
 
