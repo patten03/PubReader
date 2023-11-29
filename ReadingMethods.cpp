@@ -1,79 +1,5 @@
 #include "ReadingMethods.h"
 
-std::string searchByBook(const std::string& keyword, std::fstream& file, const fileType type)
-{
-	file.clear();
-	file.seekp(0, file.beg);
-	std::string dataRes;
-	bool found(false);
-	std::string bookTemp = upperCase(keyword);
-	while (not(found or file.eof()))
-	{
-		std::getline(file, dataRes);
-		int beg = 0;
-		int end = dataRes.find(";");
-		//if (upperCase(dataRes).find(bookTemp) != -1) // search by each field, not only name of book
-		//	found = true;
-		if (upperCase(dataRes.substr(beg, end)).find(bookTemp) != -1)
-			found = true;
-	}
-
-	if (found)
-	{
-		return dataRes;
-	}
-	else
-	{
-		if (type == book) return "None; None; None; None";
-		if (type == publisher) return "None; None; None";
-	}
-}
-
-std::vector<std::string> bookByKeyword(const std::string& keyword, std::fstream& file, const fileType type)
-{
-	file.clear();
-	file.seekp(0, file.beg);
-	std::vector<std::string> dataRes;
-	std::string tempLine = upperCase(keyword);
-	while (!file.eof())
-	{
-		std::string buff;
-		std::getline(file, buff);
-		if (upperCase(buff).find(tempLine) != -1) // search by each field, not only name of book
-		{
-			dataRes.push_back(buff.substr(0, buff.find(";")));
-		}
-	}
-	return dataRes;
-}
-
-void outSearchedBooks(std::vector<std::string> bookList, std::fstream& booksFile, std::fstream& pubsFile)
-{
-	int width(30);
-
-	if(bookList.size() == 0) throw std::exception("Ничего не найдено!");
-
-	std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
-	std::cout << std::string(width, '-');
-	std::cout << std::endl;
-
-	for (const auto& bookname : bookList)
-	{
-		std::string tempBookLine = searchByBook(bookname, booksFile, book);
-		std::string tempPublisherLine = searchByBook(bookname, pubsFile, publisher);
-
-		Book Book;
-		Publisher Publisher;
-
-		Publisher.read(tempPublisherLine);
-		Book.read(tempBookLine);
-
-		outputCLI(Book, Publisher);
-		std::cout << std::string(width, '-');
-		std::cout << std::endl;
-	}
-}
-
 void standartSettings()
 {
 	SetConsoleCP(1251);
@@ -133,13 +59,6 @@ void ask(const std::vector<std::string> choice)
 	{
 		std::cout << i + 1 << ". " << choice[i] << std::endl;
 	}
-}
-
-bool isNumber(const std::string& s)
-{
-	std::string::const_iterator it = s.begin();
-	while (it != s.end() && std::isdigit(*it)) ++it;
-	return !s.empty() && it == s.end();
 }
 
 fileType defineFileType(const std::string& filename)
@@ -292,9 +211,7 @@ std::string upperCase(const std::string& word)
 	return res;
 }
 
-/*
-@brief function return true, if files is choosen, otherwise false
-*/
+//@brief function return true, if files is choosen, otherwise false
 bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 {
 	static std::vector<std::string> twoFilesQuestion{
@@ -513,28 +430,6 @@ void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
 	}
 }
 
-void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res)
-{
-	std::string top("<!DOCTYPE html><html><body><style> table, th, td{border:1px solid black;}</style><table>");
-
-	res << top << headerRow();
-
-	for (auto& name : bookList)
-	{
-		Book Book;
-		Publisher Publisher;
-		std::string tempBookLine = searchByBook(name, bStream, book);
-		std::string tempPublisherLine = searchByBook(name, pStream, publisher);
-		Book.read(tempBookLine);
-		Publisher.read(tempPublisherLine);
-
-		res << row(Book, Publisher);
-	}
-
-	std::string floor("</table></body>");
-	res << floor;
-}
-
 std::string headerRow()
 {
 	std::string res;
@@ -586,12 +481,6 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 			if (!mergedStream.is_open())
 				throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
 
-			//std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
-			//std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
-			//mergeBooks(bookList1, bookList2); // all books merged to bookList1
-
-			//outputHTML(bookList1, bookStream, publisherStream, mergedStream);
-
 			parseNHTMLout(bookStream, publisherStream, mergedStream);
 
 			bookStream.close();
@@ -626,30 +515,6 @@ std::string askFullPath()
 	system("cls");
 	std::cout << "Файл под названием " << filename << " создан!" << std::endl;
 	return fullPath;
-}
-
-std::vector<std::string> recieveAllBooks(std::fstream& file)
-{
-	std::vector<std::string> res;
-	while (not(file.eof()))
-	{
-		std::string temp;
-		std::getline(file, temp, ';');
-		temp = upperCase(temp);
-		res.push_back(temp);
-		file.ignore(256, '\n');
-	}
-	res.erase(res.end() - 1);
-	file.clear();
-	return res;
-}
-
-std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2)
-{
-	bookList1.insert(bookList1.end(), bookList2.begin(), bookList2.end());
-	sort(bookList1.begin(), bookList1.end());
-	bookList1.erase(unique(bookList1.begin(), bookList1.end()), bookList1.end()); // unique return as last element
-	return bookList1;
 }
 
 std::string space2underscore(std::string text)

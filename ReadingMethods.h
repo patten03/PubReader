@@ -26,11 +26,7 @@ struct Publisher
 	std::string address, surname;
 };
 
-std::string searchByBook(const std::string& keyword, std::fstream& file, const fileType type);
-
 void standartSettings();
-
-bool isNumber(const std::string& s);
 
 int inputChoice(const int& end);
 void ask(const std::vector<std::string> choice);
@@ -52,14 +48,11 @@ void outputCLI(const Book& Book, const Publisher& Publisher);
 
 std::string row(const Book& B, const Publisher& P);
 std::string headerRow();
-void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 void parseNHTMLout(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 void parseByBook(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 
 void combineFiles(const std::string& filename1, const std::string& filename2);
-std::vector<std::string> recieveAllBooks(std::fstream& file);
-std::vector<std::string> mergeBooks(std::vector<std::string>& bookList1, std::vector<std::string>& bookList2);
 std::string askFullPath();
 std::string findFolder(std::string title);
 std::string space2underscore(std::string text);
