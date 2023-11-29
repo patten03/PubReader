@@ -151,6 +151,137 @@ fileType defineFileType(const std::string& filename)
 	return result;
 }
 
+void parseNCLIout(const std::string& keyword, std::fstream& bStream, std::fstream& pStream)
+{
+	int width(30);
+
+	bool found;
+
+	std::string tempLine = upperCase(keyword);
+
+	std::cout << "Вот что было найдено по вашему запросу:" << std::endl;
+	std::cout << std::string(width, '-');
+	std::cout << std::endl;
+
+	found = parseByBook(tempLine, bStream, pStream);
+	found += parseByPub(tempLine, bStream, pStream);
+
+	if (!found)
+	{
+		system("cls");
+		throw std::exception("По вашему запросу ничего не найдено!");
+	}
+		
+}
+
+//@return function return true if anythink found, otherwise false
+bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream& pStream)
+{
+	int width(30);
+
+	bool res = false;
+
+	bStream.clear();
+	bStream.seekp(0, bStream.beg);
+
+	while (!bStream.eof())
+	{
+		std::string buffB;
+		std::getline(bStream, buffB);
+		if (upperCase(buffB).find(keyword) != -1) // search by each field, not only name of book
+		{
+			res = true;
+
+			Book curBook;
+			curBook.read(buffB);
+
+			Publisher curPub;
+			curPub.name = curPub.address = curPub.surname = "None"; // when pub file have no matches
+
+			std::string bookname = upperCase(curBook.name);
+
+			pStream.clear();
+			pStream.seekp(0, pStream.beg);
+			while (!pStream.eof())
+			{
+				std::string buffP;
+				std::getline(pStream, buffP);
+				if (upperCase(buffP).find(bookname) != -1)
+				{
+					curPub.read(buffP);
+					outputCLI(curBook, curPub);
+					std::cout << std::string(width, '-') << std::endl;
+				}
+			}
+			if (curPub.name == "None")
+			{
+				outputCLI(curBook, curPub);
+				std::cout << std::string(width, '-') << std::endl;
+			}
+		}
+	}
+	return res;
+}
+
+//@return function return true if anythink found, otherwise false
+bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream& pStream)
+{
+	int width(30);
+
+	bool res = false;
+
+	pStream.clear();
+	pStream.seekp(0, pStream.beg);
+
+	while (!pStream.eof())
+	{
+		bool alredyFound(false);
+		std::string buffP;
+		std::getline(pStream, buffP);
+		if (upperCase(buffP).find(keyword) != -1) // search by each field, not only name of book
+		{
+
+			res = true;
+
+			Publisher curPub;
+			curPub.read(buffP); 
+
+			Book curBook;
+			curBook.name = curBook.kind = curBook.organization = curBook.year = "None"; // when book file have no matches
+
+			std::string bookname = upperCase(curPub.name);
+
+			bStream.clear();
+			bStream.seekp(0, bStream.beg);
+			while (!bStream.eof())
+			{
+				std::string buffB;
+				std::getline(bStream, buffB);
+				
+				if (upperCase(buffB).find(keyword) != -1)
+				{
+					alredyFound = true; // not repeat found data
+					break;
+				}
+
+				if (upperCase(buffB).find(bookname) != -1 and !alredyFound)
+				{
+					curBook.read(buffB);
+					outputCLI(curBook, curPub);
+					std::cout << std::string(width, '-') << std::endl;
+					break; // not search duplicates
+				}
+			}
+			if (curBook.name == "None" and !alredyFound)
+			{
+				outputCLI(curBook, curPub);
+				std::cout << std::string(width, '-') << std::endl;
+			}
+		}
+	}
+	return res;
+}
+
 std::string upperCase(const std::string& word)
 {
 	std::string res(word);
@@ -240,11 +371,13 @@ void search(const std::string &filename1, const std::string& filename2)
 		{
 			std::string searchWord = askString("Введите ключевое слово, по которому хотите найти информацию");
 
-			std::vector<std::string> bookList1 = bookByKeyword(searchWord, bookStream, book);
-			std::vector<std::string> bookList2 = bookByKeyword(searchWord, publisherStream, publisher);
-			bookList1 = mergeBooks(bookList1, bookList2);
+			parseNCLIout(searchWord, bookStream, publisherStream);
 
-			outSearchedBooks(bookList1, bookStream, publisherStream);
+			//std::vector<std::string> bookList1 = bookByKeyword(searchWord, bookStream, book);
+			//std::vector<std::string> bookList2 = bookByKeyword(searchWord, publisherStream, publisher);
+			//bookList1 = mergeBooks(bookList1, bookList2);
+
+			//outSearchedBooks(bookList1, bookStream, publisherStream);
 
 			std::vector<std::string> question{
 				"Найти другое издание",
@@ -288,6 +421,96 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 		<< std::setw(width) << "   Год издания: " << Book.year << std::endl
 		<< std::setw(width) << "   Адресс редакции: " << Publisher.address << std::endl
 		<< std::setw(width) << "   Фамилия главного редактора: " << Publisher.surname << std::endl;
+}
+
+void parseNHTMLout(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
+{
+	std::string top("<!DOCTYPE html><html><body><style> table, th, td{border:1px solid black;}</style><table>");
+
+	res << top << headerRow();
+
+	parseByBook(bStream, pStream, res);
+	parseByPub(bStream, pStream, res);
+
+	std::string floor("</table></body>");
+	res << floor;
+}
+
+void parseByBook(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
+{
+	bStream.clear();
+	bStream.seekp(0, bStream.beg);
+
+	while (!bStream.eof())
+	{
+		std::string buffB;
+		std::getline(bStream, buffB);
+		if (buffB == "")
+			break; // exit if it last line
+		Book curBook;
+		curBook.read(buffB);
+
+		Publisher curPub;
+		curPub.name = curPub.address = curPub.surname = "None"; // when pub file have no matches
+
+		std::string bookname = upperCase(curBook.name);
+
+		pStream.clear();
+		pStream.seekp(0, pStream.beg);
+		while (!pStream.eof())
+		{
+			std::string buffP;
+			std::getline(pStream, buffP);
+			if (upperCase(buffP).find(bookname) != -1)
+			{
+				curPub.read(buffP);
+				res << row(curBook, curPub);
+			}
+		}
+		if (curPub.name == "None")
+		{
+			res << row(curBook, curPub);
+		}
+	}
+}
+
+void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
+{
+	pStream.clear();
+	pStream.seekp(0, pStream.beg);
+
+	while (!pStream.eof())
+	{
+		bool alredyFound(false);
+		std::string buffP;
+		std::getline(pStream, buffP);
+
+		Publisher curPub;
+		curPub.read(buffP);
+
+		Book curBook;
+		curBook.name = curBook.kind = curBook.organization = curBook.year = "None"; // when book file have no matches
+
+		std::string bookname = upperCase(curPub.name);
+
+		bStream.clear();
+		bStream.seekp(0, bStream.beg);
+		while (!bStream.eof())
+		{
+			std::string buffB;
+			std::getline(bStream, buffB);
+
+			if (upperCase(buffB).find(upperCase(curPub.name)) != -1)
+			{
+				curBook.read(buffB);
+				break;
+			}
+		}
+		if (curBook.name == "None")
+		{
+			res << row(curBook, curPub);
+		}
+	}
 }
 
 void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res)
@@ -353,25 +576,29 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		try
 		{
 			std::string filenameMerged = askFullPath();
-			if (filenameMerged == "None") return;
+			if (filenameMerged == "None")
+				return; // quit, if user want
 
 			std::fstream bookStream, publisherStream, mergedStream;
 			bookStream.open(filename1, std::ios::in);
 			publisherStream.open(filename2, std::ios::in);
 			mergedStream.open(filenameMerged, std::ios::out);
-			if (!mergedStream.is_open()) throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
+			if (!mergedStream.is_open())
+				throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
 
-			std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
-			std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
-			mergeBooks(bookList1, bookList2); // all books merged to bookList1
+			//std::vector<std::string> bookList1 = recieveAllBooks(bookStream);
+			//std::vector<std::string> bookList2 = recieveAllBooks(publisherStream);
+			//mergeBooks(bookList1, bookList2); // all books merged to bookList1
 
-			outputHTML(bookList1, bookStream, publisherStream, mergedStream);
+			//outputHTML(bookList1, bookStream, publisherStream, mergedStream);
+
+			parseNHTMLout(bookStream, publisherStream, mergedStream);
 
 			bookStream.close();
 			publisherStream.close();
 			mergedStream.close();
 
-			std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl << ">>";
+			std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl;
 			_getch();
 			system("cls");
 			approved = true;

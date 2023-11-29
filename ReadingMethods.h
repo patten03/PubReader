@@ -44,10 +44,18 @@ void menu();
 void menu();
 
 void search(const std::string& filename1, const std::string& filename2);
+
+void parseNCLIout(const std::string& keyword, std::fstream& bStream, std::fstream& pStream);
+bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream& pStream);
+bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream& pStream);
 void outputCLI(const Book& Book, const Publisher& Publisher);
+
 std::string row(const Book& B, const Publisher& P);
 std::string headerRow();
 void outputHTML(const std::vector<std::string> bookList, std::fstream& bStream, std::fstream& pStream, std::fstream& res);
+void parseNHTMLout(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
+void parseByBook(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
+void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res);
 
 void combineFiles(const std::string& filename1, const std::string& filename2);
 std::vector<std::string> recieveAllBooks(std::fstream& file);
