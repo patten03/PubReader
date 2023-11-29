@@ -21,9 +21,15 @@
     <ClCompile Include="ReadingMethods.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DirWork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ReadingMethods.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirWork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
