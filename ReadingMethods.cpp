@@ -238,8 +238,11 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			}
 			case 1:
 			{
-				filename1 = findFile("Выберите файл:", book);
-				if (filename1 == "") break;
+				std::string buff;
+				buff = findFile("Выберите файл:", publisher);
+				if (buff == "")
+					break;
+				filename1 = buff;
 				int index = twoFilesQuestion[1 - 1].find("(");
 				twoFilesQuestion[1 - 1].erase(index);
 				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); // appending filename to menu
@@ -247,8 +250,11 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			}
 			case 2: 
 			{
-				filename2 = findFile("Выберите файл:", publisher);
-				if (filename1 == "") break;
+				std::string buff;
+				buff = findFile("Выберите файл:", publisher);
+				if (buff == "")
+					break;
+				filename2 = buff;
 				int index = twoFilesQuestion[2 - 1].find("(");
 				twoFilesQuestion[2 - 1].erase(index);
 				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); // appending filename to menu
@@ -280,12 +286,6 @@ void search(const std::string &filename1, const std::string& filename2)
 			std::string searchWord = askString("Введите ключевое слово, по которому хотите найти информацию");
 
 			parseNCLIout(searchWord, bookStream, publisherStream);
-
-			//std::vector<std::string> bookList1 = bookByKeyword(searchWord, bookStream, book);
-			//std::vector<std::string> bookList2 = bookByKeyword(searchWord, publisherStream, publisher);
-			//bookList1 = mergeBooks(bookList1, bookList2);
-
-			//outSearchedBooks(bookList1, bookStream, publisherStream);
 
 			std::vector<std::string> question{
 				"Найти другое издание",
