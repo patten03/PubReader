@@ -239,7 +239,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			case 1:
 			{
 				std::string buff;
-				buff = findFile("Âûבונטעו פאיכ:", publisher);
+				buff = findFile("Âûבונטעו פאיכ:", book);
 				if (buff == "")
 					break;
 				filename1 = buff;
