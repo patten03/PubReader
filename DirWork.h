@@ -7,6 +7,7 @@ enum fileType { none = 0, book = 1, publisher = 2 };
 
 fileType defineFileType(const std::string& filename);
 
+bool dirAccess(const std::string& folder);
 std::string findFile(std::string title, const fileType& type);
 std::string askFullPath();
 std::string findFolder(std::string title);

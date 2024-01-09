@@ -31,6 +31,7 @@ int inputChoice(const int& end);
 void ask(const std::vector<std::string> choice);
 bool chooseTwoFiles(std::string& filename1, std::string& filename2);
 std::string upperCase(const std::string& word);
+void checkSpecialSymbols(const std::string& word);
 std::string askString(const std::string& question);
 
 void menu();

@@ -8,44 +8,67 @@ void showDir(const std::vector<std::string>& dir)
 	}
 }
 
+bool dirAccess(const std::string& folder)
+{
+	std::string filepath = folder + "\\check_permission.txt";
+	std::ofstream file(filepath);
+	file.close();
+
+	bool res = std::filesystem::exists(filepath);
+	if (res)
+		system(("del " + filepath).c_str());
+	return res;
+}
+
 std::string findFolder(std::string title)
 {
 	bool agree = false;
 	std::filesystem::path p = ".";
-	std::string folder = std::filesystem::absolute(p).string();
+	std::string begFolder = std::filesystem::absolute(p).string();
+	std::string curFolder = begFolder;
 
 	while (agree != true)
 	{
 		try
 		{
+			bool permission = dirAccess(curFolder);
+
 			std::vector<std::string> folderList;
 			std::cout << title << std::endl;
 			std::vector<std::string> menu{
 				"Выбрать текущую папку",
 				"Выйти из папки",
+				"Вернуться в изначальную папку",
 				"Возврат в меню"
 			};
-			menu[0] = menu[0] + " (" + folder + ")";
+			if (!permission)
+				menu[0] = "Невозможно выбрать текущую папку";
+			menu[0] = menu[0] + " (" + curFolder + ")";
 
 			int begCoord = menu.size() + 1;
 			int cur(begCoord); // arrow coordinate for folders
 
-			makeDirList(folder, folderList);
+			makeDirList(curFolder, folderList);
 
 			ask(menu);
 			showDir(folderList);
 
-			folderChoice(begCoord, folderList, cur, agree, folder);
+			folderChoice(begCoord, folderList, cur, agree, curFolder);
+
+			if (curFolder == "returnStart")
+				curFolder = begFolder;
+			if (agree and !permission and curFolder != "")
+				agree = false;
 
 			system("cls");
 		}
 		catch (const std::exception& ex)
 		{
 			std::cout << "Вы не можете выбрать этот файл или папку!" << std::endl;
-			folder = folder.substr(0, folder.rfind("\\"));
+			curFolder = curFolder.substr(0, curFolder.rfind("\\"));
 		}
 	}
-	return folder;
+	return curFolder;
 }
 
 void makeDirList(std::string folder, std::vector<std::string>& folderList)
@@ -66,27 +89,34 @@ void folderChoice(int menuSize, std::vector<std::string> folders, int& cur, bool
 {
 	movingArrow(menuSize, menuSize + folders.size(), cur, 0); // just show the arrow
 
-	bool choosedMenu(false);
-	while (!choosedMenu)
+	bool chosenMenu(false);
+	while (!chosenMenu)
 	{
 		switch (int c = _getch())
 		{
 		case 224: cur = movingArrow(menuSize, menuSize + folders.size() - 1, cur, _getch()); break;
 		case '1':
 		{
-			choosedMenu = true;
+			chosenMenu = true;
 			cur = menuSize;
 			agree = true; break; //save current folder
 		}
 		case '2':
 		{
-			choosedMenu = true;
+			chosenMenu = true;
 			cur = menuSize;
 			folder = folder.substr(0, folder.rfind("\\")); break; //return from last folder
 		}
 		case '3':
 		{
-			choosedMenu = true;
+			chosenMenu = true;
+			cur = menuSize;
+			folder = "returnStart";
+			break;
+		}
+		case '4':
+		{
+			chosenMenu = true;
 			cur = menuSize;
 			agree = true;
 			folder = "";
@@ -98,7 +128,7 @@ void folderChoice(int menuSize, std::vector<std::string> folders, int& cur, bool
 				folder = folder.substr(0, folder.rfind("\\"));
 			else
 				folder = folder + "\\" + folders[cur - menuSize];
-			choosedMenu = true;
+			chosenMenu = true;
 			cur = menuSize;
 			break;
 		}
@@ -110,19 +140,21 @@ void folderChoice(int menuSize, std::vector<std::string> folders, int& cur, bool
 std::string findFile(std::string title, const fileType& type)
 {
 	std::filesystem::path p = ".";
-	std::string filepath = std::filesystem::absolute(p).string();
+	std::string begFilepath = std::filesystem::absolute(p).string();
+	std::string curFilepath = begFilepath;
 
-	while (filepath.find(".txt") == -1 and filepath != "")
+	while (curFilepath.find(".txt") == -1 and curFilepath != "")
 	{
 		try
 		{
 			std::vector<std::string> folderList;
-			makeDirNFilesList(filepath, folderList, type);
+			makeDirNFilesList(curFilepath, folderList, type);
 			std::cout << title << std::endl;
 
-			std::cout << "Текущая папка - (" + filepath + ")" << std::endl;
+			std::cout << "Текущая папка - (" + curFilepath + ")" << std::endl;
 			std::vector<std::string> menu{
 				"Выйти из папки",
+				"Вернуться в изначальную папку",
 				"Возврат в меню"
 			};
 
@@ -132,25 +164,27 @@ std::string findFile(std::string title, const fileType& type)
 			ask(menu);
 			showDir(folderList);
 
-			fileChoice(begCoord, folderList, cur, filepath);
+			fileChoice(begCoord, folderList, cur, curFilepath);
+			if (curFilepath == "returnStart")
+				curFilepath = begFilepath;
 
 			system("cls");
 		}
 		catch (const std::exception& ex)
 		{
 			std::cout << "Вы не можете выбрать этот файл или папку!" << std::endl;
-			filepath = filepath.substr(0, filepath.rfind("\\"));
+			curFilepath = curFilepath.substr(0, curFilepath.rfind("\\"));
 		}
 	}
-	return filepath;
+	return curFilepath;
 }
 
 void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::string& filepath)
 {
 	movingArrow(begCoord, begCoord + folders.size(), cur, 0); // just show the arrow
 
-	bool choosedMenu(false);
-	while (!choosedMenu)
+	bool chosenMenu(false);
+	while (!chosenMenu)
 	{
 		switch (int c = _getch())
 		{	// arrow code
@@ -158,13 +192,20 @@ void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::s
 		case '1':
 		{
 			filepath = filepath.substr(0, filepath.rfind("\\")); //return from last folder
-			choosedMenu = true;
+			chosenMenu = true;
 			cur = begCoord;
 			break;
 		}
 		case '2':
 		{
-			choosedMenu = true;
+			filepath = "returnStart";
+			chosenMenu = true;
+			cur = begCoord;
+			break;
+		}
+		case '3':
+		{
+			chosenMenu = true;
 			cur = begCoord;
 			filepath = ""; break; //stop process
 		}
@@ -174,7 +215,7 @@ void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::s
 				filepath = filepath.substr(0, filepath.rfind("\\"));
 			else
 				filepath = filepath + "\\" + folders[cur - begCoord];
-			choosedMenu = true;
+			chosenMenu = true;
 			cur = begCoord;
 			break;
 		}

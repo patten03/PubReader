@@ -43,12 +43,36 @@ void menu()
 	}
 }
 
+void checkSpecialSymbols(const std::string& word)
+{
+	std::string forbiddenSymbols("\\/:*?<>\"|");
+	for (int i(0); i < forbiddenSymbols.size(); i++)
+	{
+		if (word.find(forbiddenSymbols[i]) != -1)
+			throw std::invalid_argument("Файл не может содержать \\/:*?<>\"|");
+	}
+}
+
 std::string askString(const std::string& question)
 {
 	std::string res;
 	std::cout << question << std::endl;
 	std::cout << ">>";
-	std::getline(std::cin, res);
+
+	bool approved(false);
+	while (!approved)
+	{
+		try
+		{
+			std::getline(std::cin, res);
+			checkSpecialSymbols(res);
+			approved = true;
+		}
+		catch (std::exception& ex)
+		{
+			std::cout << ex.what() << std::endl;
+		}
+	}
 	system("cls");
 	return res;
 }
