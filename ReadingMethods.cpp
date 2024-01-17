@@ -2,6 +2,7 @@
 
 void standartSettings()
 {
+	//установка русской кодировки для консоли
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 	std::setlocale(LC_ALL, "ru");
@@ -13,15 +14,15 @@ void menu()
 
 	static std::string filename1("");
 	static std::string filename2("");
-	bool isChoosen(false);
-	bool quit(false);
+	bool isChoosen(false);	//переменная цикла, которая отвечает за выход из программы
+	bool quit(false);		//переменная цикла, которая отвечает за выход из выбора файлов
 
-	while (!isChoosen)
+	while (!isChoosen) //цикл выбора файлов
 	{
 		quit = !chooseTwoFiles(filename1, filename2);
 
 		isChoosen = true;
-		while (!quit and isChoosen)
+		while (!quit and isChoosen) //цикл выбора действий
 		{
 			std::cout << "Выберите действие:" << std::endl;
 			std::vector<std::string> menuQuestions{
@@ -59,13 +60,13 @@ std::string askString(const std::string& question)
 	std::cout << question << std::endl;
 	std::cout << ">>";
 
-	bool approved(false);
+	bool approved(false); //переменная цикла, становится true когда строка введена без ошибок
 	while (!approved)
 	{
 		try
 		{
 			std::getline(std::cin, res);
-			checkSpecialSymbols(res);
+			checkSpecialSymbols(res); //запрет на ввод символов \/:*?<>"|
 			approved = true;
 		}
 		catch (std::exception& ex)
@@ -89,7 +90,7 @@ void parseNCLIout(const std::string& keyword, std::fstream& bStream, std::fstrea
 {
 	int width(30);
 
-	bool found;
+	bool found; //если что-то найдено, то true, иначе false
 
 	std::string tempLine = upperCase(keyword);
 
@@ -97,6 +98,7 @@ void parseNCLIout(const std::string& keyword, std::fstream& bStream, std::fstrea
 	std::cout << std::string(width, '-');
 	std::cout << std::endl;
 
+	//вызов поиска и определение found
 	found = parseByBook(tempLine, bStream, pStream);
 	found += parseByPub(tempLine, bStream, pStream);
 
@@ -108,7 +110,7 @@ void parseNCLIout(const std::string& keyword, std::fstream& bStream, std::fstrea
 		
 }
 
-//@return function return true if anythink found, otherwise false
+//@return функция возвращает true если что-то найдено, иначе false
 bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream& pStream)
 {
 	int width(30);
@@ -118,11 +120,11 @@ bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream
 	bStream.clear();
 	bStream.seekp(0, bStream.beg);
 
-	while (!bStream.eof())
+	while (!bStream.eof()) //цикл по файлу издания
 	{
 		std::string buffB;
 		std::getline(bStream, buffB);
-		if (upperCase(buffB).find(keyword) != -1) // search by each field, not only name of book
+		if (upperCase(buffB).find(keyword) != -1) //поиск по каждому полю, не только по изданию
 		{
 			res = true;
 
@@ -130,23 +132,27 @@ bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream
 			curBook.read(buffB);
 
 			Publisher curPub;
-			curPub.name = curPub.address = curPub.surname = "None"; // when pub file have no matches
+			//возвращаемое значение при условии, когда в файле редакции ничего не найдено
+			curPub.name = curPub.address = curPub.surname = "None"; 
 
 			std::string bookname = upperCase(curBook.name);
 
 			pStream.clear();
 			pStream.seekp(0, pStream.beg);
-			while (!pStream.eof())
+			while (!pStream.eof()) //цикл по файлу редакций
 			{
 				std::string buffP;
 				std::getline(pStream, buffP);
-				if (upperCase(buffP).find(bookname) != -1)
+
+				//вывод всех данных при совпадении названий книг в двух файлах
+				if (upperCase(buffP).find(bookname) != -1) 
 				{
 					curPub.read(buffP);
 					outputCLI(curBook, curPub);
 					std::cout << std::string(width, '-') << std::endl;
 				}
 			}
+			//вывод всех данных в случае, когда в файле редакции ничего не найдено
 			if (curPub.name == "None")
 			{
 				outputCLI(curBook, curPub);
@@ -157,7 +163,7 @@ bool parseByBook(const std::string& keyword, std::fstream& bStream, std::fstream
 	return res;
 }
 
-//@return function return true if anythink found, otherwise false
+//@return функция возвращает true если что-то найдено, иначе false
 bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream& pStream)
 {
 	int width(30);
@@ -167,12 +173,12 @@ bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream&
 	pStream.clear();
 	pStream.seekp(0, pStream.beg);
 
-	while (!pStream.eof())
+	while (!pStream.eof()) //цикл по файлу редакции
 	{
 		bool alredyFound(false);
 		std::string buffP;
 		std::getline(pStream, buffP);
-		if (upperCase(buffP).find(keyword) != -1) // search by each field, not only name of book
+		if (upperCase(buffP).find(keyword) != -1) //поиск по каждому полю, не только по изданию
 		{
 
 			res = true;
@@ -181,20 +187,20 @@ bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream&
 			curPub.read(buffP); 
 
 			Book curBook;
-			curBook.name = curBook.kind = curBook.organization = curBook.year = "None"; // when book file have no matches
-
+			//возвращаемое значение при условии, когда в файле редакции ничего не найдено
+			curBook.name = curBook.kind = curBook.organization = curBook.year = "None";
 			std::string bookname = upperCase(curPub.name);
 
 			bStream.clear();
 			bStream.seekp(0, bStream.beg);
-			while (!bStream.eof())
+			while (!bStream.eof()) //цикл по файлу изданий
 			{
 				std::string buffB;
 				std::getline(bStream, buffB);
 				
 				if (upperCase(buffB).find(keyword) != -1)
 				{
-					alredyFound = true; // not repeat found data
+					alredyFound = true; //не повторять уже найденные через parseByBook данные 
 					break;
 				}
 
@@ -203,9 +209,10 @@ bool parseByPub(const std::string& keyword, std::fstream& bStream, std::fstream&
 					curBook.read(buffB);
 					outputCLI(curBook, curPub);
 					std::cout << std::string(width, '-') << std::endl;
-					break; // not search duplicates
+					break; //остановка поиска дубликатов
 				}
 			}
+			//вывод всех данных в случае, когда в файле изданий ничего не найдено
 			if (curBook.name == "None" and !alredyFound)
 			{
 				outputCLI(curBook, curPub);
@@ -226,7 +233,7 @@ std::string upperCase(const std::string& word)
 	return res;
 }
 
-//@brief function return true, if files is choosen, otherwise false
+//@return функция возвращает true, если файлы выбраны, иначе false
 bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 {
 	static std::vector<std::string> twoFilesQuestion{
@@ -235,13 +242,13 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 		"Выйти из программы"
 	};
 
-	bool isChoosen(false);
-	bool quit(false);
+	bool isChoosen(false);	//true когда оба файла выбраны
+	bool quit(false);		//true когда пользователь решил выйти
 
 	while (not(isChoosen or quit))
 	{
-		if (filename1 != "" and filename2 != "" and twoFilesQuestion.size() < 4)
-			twoFilesQuestion.push_back("Работать с выбранными файлами");
+		if (filename1 != "" and filename2 != "" and twoFilesQuestion.size() < 4) 
+			twoFilesQuestion.push_back("Работать с выбранными файлами"); //добавление в меню действия работы с файлами
 
 		try
 		{
@@ -252,13 +259,13 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 
 			switch (choice)
 			{
-			case 4: 
+			case 4: //вход в меню выбора действий
 			{
 				if (filename1 != "" and filename2 != "")
 					isChoosen = true;
 				break;
 			}
-			case 1:
+			case 1: //выбор файла типа изданий
 			{
 				std::string buff;
 				buff = findFile("Выберите файл:", book);
@@ -267,10 +274,10 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				filename1 = buff;
 				int index = twoFilesQuestion[1 - 1].find("(");
 				twoFilesQuestion[1 - 1].erase(index);
-				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); // appending filename to menu
+				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); //добавление названия файла в меню
 				break;
 			}
-			case 2: 
+			case 2: //выбор файла типа редакций
 			{
 				std::string buff;
 				buff = findFile("Выберите файл:", publisher);
@@ -279,10 +286,14 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				filename2 = buff;
 				int index = twoFilesQuestion[2 - 1].find("(");
 				twoFilesQuestion[2 - 1].erase(index);
-				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); // appending filename to menu
+				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); //добавление названия файла в меню
 				break;
 			}
-			case 3: quit = true; break;
+			case 3: //выход из меню
+			{
+				quit = true;
+				break;
+			}
 			default: break;
 			}
 		}
@@ -300,14 +311,14 @@ void search(const std::string &filename1, const std::string& filename2)
 	bookStream.open(filename1, std::ios::in);
 	publisherStream.open(filename2, std::ios::in);
 
-	bool quite(false);
+	bool quite(false); //переменная цикла, отвечает за прекращения поиска
 	while (not(quite))
 	{
 		try
 		{
 			std::string searchWord = askString("Введите ключевое слово, по которому хотите найти информацию");
 
-			parseNCLIout(searchWord, bookStream, publisherStream);
+			parseNCLIout(searchWord, bookStream, publisherStream); //поиск совпадений с ключевым словом
 
 			std::vector<std::string> question{
 				"Найти другое издание",
@@ -315,7 +326,8 @@ void search(const std::string &filename1, const std::string& filename2)
 			};
 			ask(question);
 			int answer(inputChoice(question.size()));
-			if (answer == 2) quite = true;
+			if (answer == 2) //выход из цикла
+				quite = true;
 		}
 		catch (std::exception& ex)
 		{
@@ -326,7 +338,8 @@ void search(const std::string &filename1, const std::string& filename2)
 			};
 			ask(question);
 			int answer(inputChoice(question.size()));
-			if (answer == 2) quite = true;
+			if (answer == 2) //выход из цикла
+				quite = true;
 			system("cls");
 		}
 	}
@@ -339,11 +352,15 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 {
 	const int width(35);
 
-	std::string tempName;
+	//все поля не обязательно заполнены, по этому
+	//название издания определяется из того файла,
+	//где оно есть
+	std::string tempName; 
 	if (Book.name == "None")
 		tempName = Publisher.name;
 	else
 		tempName = Book.name;
+
 	std::cout << std::left
 		<< std::setw(width) << "   Название издания: " << tempName << std::endl
 		<< std::setw(width) << "   Вид издания: " << Book.kind << std::endl
@@ -355,13 +372,17 @@ void outputCLI(const Book& Book, const Publisher& Publisher)
 
 void parseNHTMLout(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
 {
+	//верхняя часть HTML файла
 	std::string top("<!DOCTYPE html><html><body><style> table, th, td{border:1px solid black;}</style><table>");
 
-	res << top << headerRow();
+	//названия полей
+	res << top << headerRow(); 
 
+	//содержание HTML файла
 	parseByBook(bStream, pStream, res);
 	parseByPub(bStream, pStream, res);
 
+	//нижняя часть HTML файла
 	std::string floor("</table></body>");
 	res << floor;
 }
@@ -371,23 +392,24 @@ void parseByBook(std::fstream& bStream, std::fstream& pStream, std::fstream& res
 	bStream.clear();
 	bStream.seekp(0, bStream.beg);
 
-	while (!bStream.eof())
+	while (!bStream.eof()) //цикл по файлу издательства
 	{
 		std::string buffB;
 		std::getline(bStream, buffB);
 		if (buffB == "")
-			break; // exit if it last line
+			break; //выход из файла если последняя строка пустая
 		Book curBook;
 		curBook.read(buffB);
 
 		Publisher curPub;
-		curPub.name = curPub.address = curPub.surname = "None"; // when pub file have no matches
+		//возвращаемое значение при условии, когда в файле редакции ничего не найдено
+		curPub.name = curPub.address = curPub.surname = "None";
 
 		std::string bookname = upperCase(curBook.name);
 
 		pStream.clear();
 		pStream.seekp(0, pStream.beg);
-		while (!pStream.eof())
+		while (!pStream.eof()) //цикл по файлу редакции
 		{
 			std::string buffP;
 			std::getline(pStream, buffP);
@@ -397,6 +419,7 @@ void parseByBook(std::fstream& bStream, std::fstream& pStream, std::fstream& res
 				res << row(curBook, curPub);
 			}
 		}
+		//вывод всех данных в случае, когда в файле изданий ничего не найдено
 		if (curPub.name == "None")
 		{
 			res << row(curBook, curPub);
@@ -409,7 +432,7 @@ void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
 	pStream.clear();
 	pStream.seekp(0, pStream.beg);
 
-	while (!pStream.eof())
+	while (!pStream.eof()) //цикл по файлу редакции
 	{
 		bool alredyFound(false);
 		std::string buffP;
@@ -419,23 +442,25 @@ void parseByPub(std::fstream& bStream, std::fstream& pStream, std::fstream& res)
 		curPub.read(buffP);
 
 		Book curBook;
-		curBook.name = curBook.kind = curBook.organization = curBook.year = "None"; // when book file have no matches
+		//возвращаемое значение при условии, когда в файле редакции ничего не найдено
+		curBook.name = curBook.kind = curBook.organization = curBook.year = "None";
 
 		std::string bookname = upperCase(curPub.name);
 
 		bStream.clear();
 		bStream.seekp(0, bStream.beg);
-		while (!bStream.eof())
+		while (!bStream.eof()) //цикл по файлу изданий
 		{
 			std::string buffB;
 			std::getline(bStream, buffB);
-
-			if (upperCase(buffB).find(upperCase(curPub.name)) != -1)
+			
+			if (upperCase(buffB).find(upperCase(curPub.name)) != -1) 
 			{
 				curBook.read(buffB);
-				break;
+				break; //исключение повторений 
 			}
 		}
+		//вывод всех данных в случае, когда в файле изданий ничего не найдено
 		if (curBook.name == "None")
 		{
 			res << row(curBook, curPub);
@@ -457,6 +482,9 @@ std::string headerRow()
 
 std::string row(const Book& B, const Publisher& P)
 {
+	//все поля не обязательно заполнены, по этому
+	//название издания определяется из того файла,
+	//где оно есть
 	std::string tempName;
 	if (B.name == "None")
 		tempName = P.name;
@@ -478,23 +506,24 @@ std::string row(const Book& B, const Publisher& P)
 
 void combineFiles(const std::string& filename1, const std::string& filename2)
 {
-	bool approved(false);
+	bool approved(false); //переменная цикла, при выполненении всех действий без ошибок становится true
 	while (!approved)
 	{
 		try
 		{
 			std::string filenameMerged = askFullPath();
 			if (filenameMerged == "None")
-				return; // quit, if user want
+				return; //выход из цикла по требованию от пользователя
 
 			std::fstream bookStream, publisherStream, mergedStream;
 			bookStream.open(filename1, std::ios::in);
 			publisherStream.open(filename2, std::ios::in);
 			mergedStream.open(filenameMerged, std::ios::out);
-			if (!mergedStream.is_open())
-				throw std::invalid_argument("Не удалось создать файл");
 
-			parseNHTMLout(bookStream, publisherStream, mergedStream);
+			if (!mergedStream.is_open()) 
+				throw std::invalid_argument("Не удалось создать файл"); //для проверки открытия файла
+
+			parseNHTMLout(bookStream, publisherStream, mergedStream); //слияние файлов
 
 			bookStream.close();
 			publisherStream.close();
@@ -512,6 +541,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 	}
 }
 
+//@brief инициализация структуры из строки
 void Publisher::read(std::string& line)
 {
 	std::string delimiter = "; ";
@@ -519,6 +549,8 @@ void Publisher::read(std::string& line)
 
 	std::string buff[3];
 	line = line + ";";
+
+	//разделение строки по символу "; "
 	for (auto& field : buff)
 	{
 		pos = line.find(delimiter);
@@ -530,6 +562,7 @@ void Publisher::read(std::string& line)
 	this->surname = buff[2].substr(0, buff[2].size() - 1);
 }
 
+//@brief инициализация структуры
 void Book::read(std::string& line)
 {
 	std::string delimiter = "; ";
@@ -537,6 +570,8 @@ void Book::read(std::string& line)
 
 	std::string buff[4];
 	line = line + ";";
+
+	//разделение строки по символу "; "
 	for (auto& field : buff)
 	{
 		pos = line.find(delimiter);
@@ -552,10 +587,12 @@ void Book::read(std::string& line)
 int inputChoice(const int& end)
 {
 	int choiceInt = _getch();
+
+	//цикл прерывается только при нажатии клавиши от 1 до <end>
 	while (choiceInt <= '0' or choiceInt > char(end + '0'))
 		choiceInt = _getch();
 
-	choiceInt = choiceInt - '0';
+	choiceInt = choiceInt - '0'; //преобразование значения цифры из char в int 
 	system("cls");
 	return choiceInt;
 }
