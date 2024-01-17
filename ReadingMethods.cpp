@@ -37,7 +37,7 @@ void menu()
 			case 1: search(filename1, filename2); break;
 			case 2: combineFiles(filename1, filename2); break;
 			case 3: isChoosen = quit = false; break;
-			default: throw std::invalid_argument("Некорректный формат ввода!");
+			default: break;
 			}
 		}
 	}
@@ -256,8 +256,6 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 			{
 				if (filename1 != "" and filename2 != "")
 					isChoosen = true;
-				else
-					throw std::exception("Выберите все файлы!");
 				break;
 			}
 			case 1:
@@ -285,7 +283,7 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				break;
 			}
 			case 3: quit = true; break;
-			default: throw std::invalid_argument("Некорректный формат ввода!");
+			default: break;
 			}
 		}
 		catch (std::exception& ex)
@@ -494,7 +492,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 			publisherStream.open(filename2, std::ios::in);
 			mergedStream.open(filenameMerged, std::ios::out);
 			if (!mergedStream.is_open())
-				throw std::invalid_argument("Не удалось создать файл!\nПопробуйте выбрать другую папку или не использовать специальные символы.");
+				throw std::invalid_argument("Не удалось создать файл");
 
 			parseNHTMLout(bookStream, publisherStream, mergedStream);
 
