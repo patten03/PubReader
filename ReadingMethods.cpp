@@ -496,6 +496,11 @@ std::string row(const Book& B, const Publisher& P)
 		tempName = P.name;
 	else
 		tempName = B.name;
+	if (P.name == ";" and B.name == "None")
+	{
+		system("cls");
+		throw std::invalid_argument("Один из файлов является пустым и слияние невозможно");
+	}
 
 	std::string res;
 	res = res + "<tr>";
@@ -543,6 +548,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		catch (std::exception& ex)
 		{
 			std::cout << ex.what() << std::endl;
+			return; //выход из цикла из-за ошибки
 		}
 	}
 }
