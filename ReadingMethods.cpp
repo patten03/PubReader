@@ -58,16 +58,22 @@ std::string askString(const std::string& question)
 {
 	std::string res;
 	std::cout << question << std::endl;
-	std::cout << ">>";
 
 	bool approved(false); //переменная цикла, становится true когда строка введена без ошибок
 	while (!approved)
 	{
 		try
 		{
+			std::cout << ">>";
 			std::getline(std::cin, res);
 			checkSpecialSymbols(res); //запрет на ввод символов \/:*?<>"|
-			approved = true;
+			if (res != "")
+				approved = true;
+			else
+			{
+				system("cls");
+				std::cout << question << std::endl;
+			}
 		}
 		catch (std::exception& ex)
 		{
