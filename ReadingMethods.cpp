@@ -520,9 +520,10 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 	bool approved(false); //переменная цикла, при выполненении всех действий без ошибок становится true
 	while (!approved)
 	{
+		std::string filenameMerged;
 		try
 		{
-			std::string filenameMerged = askFullPath();
+			filenameMerged = askFullPath();
 			if (filenameMerged == "None")
 				return; //выход из цикла по требованию от пользователя
 
@@ -548,6 +549,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		catch (std::exception& ex)
 		{
 			std::cout << ex.what() << std::endl;
+			system(("del \"" + filenameMerged + "\"").c_str());
 			return; //выход из цикла из-за ошибки
 		}
 	}
