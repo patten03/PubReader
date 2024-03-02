@@ -10,7 +10,11 @@ void standartSettings()
 
 void menu()
 {
-	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl << std::endl;
+	std::cout << "Добро пожаловать в программу PublisherReader" << std::endl << std::endl
+		<< "Программа позволяет рабоать с файлами типов издание и редакция:" << std::endl
+		<< "- находить информацию из двух файлов" << std::endl
+		<< "- объединять файлы типа издание и редации" << std::endl << std::endl
+		<< "Для работы с файлами они должны находится в той же директории, что и программа" << std::endl << std::endl;
 
 	static std::string filename1("");
 	static std::string filename2("");
