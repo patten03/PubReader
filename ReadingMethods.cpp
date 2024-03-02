@@ -280,7 +280,9 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				filename1 = buff;
 				int index = twoFilesQuestion[1 - 1].find("(");
 				twoFilesQuestion[1 - 1].erase(index);
-				twoFilesQuestion[1 - 1].append("(" + filename1 + ")"); //добавление названия файла в меню
+				int beg = filename1.rfind("\\") + 1;
+				int end = filename1.length();
+				twoFilesQuestion[1 - 1].append("(" + filename1.substr(beg, end) + ")"); //добавление названия файла в меню
 				break;
 			}
 			case 2: //выбор файла типа редакций
@@ -292,7 +294,9 @@ bool chooseTwoFiles(std::string& filename1, std::string& filename2)
 				filename2 = buff;
 				int index = twoFilesQuestion[2 - 1].find("(");
 				twoFilesQuestion[2 - 1].erase(index);
-				twoFilesQuestion[2 - 1].append("(" + filename2 + ")"); //добавление названия файла в меню
+				int beg = filename2.rfind("\\") + 1;
+				int end = filename2.length();
+				twoFilesQuestion[2 - 1].append("(" + filename2.substr(beg, end) + ")"); //добавление названия файла в меню
 				break;
 			}
 			case 3: //выход из меню
@@ -523,9 +527,7 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		std::string filenameMerged;
 		try
 		{
-			filenameMerged = askFullPath();
-			if (filenameMerged == "None")
-				return; //выход из цикла по требованию от пользователя
+			filenameMerged = askName(); //получение названия файла от пользователя
 
 			std::fstream bookStream, publisherStream, mergedStream;
 			bookStream.open(filename1, std::ios::in);

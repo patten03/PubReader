@@ -150,51 +150,50 @@ void folderChoice(int menuSize, std::vector<std::string> folders, int& cur, bool
 std::string findFile(std::string title, const fileType& type)
 {
 	std::filesystem::path p = "."; //получение пути, где находится программа
-	std::string begFilepath = std::filesystem::absolute(p).string();
-	std::string curFilepath = begFilepath;
+	std::string curFilepath = std::filesystem::absolute(p).string();
 
 	//выход из цикла происходит когда выбран файл или пользователь решил выйти в меню
 	while (curFilepath.find(".txt") == -1 and curFilepath != "")
 	{
 		try
 		{
-			std::vector<std::string> folderList;
-			makeDirNFilesList(curFilepath, folderList, type);
+			std::vector<std::string> fileList;
+			makeFilesList(curFilepath, fileList, type);
+			if (fileList.size() == 0)
+				throw std::invalid_argument("Директория пуста, ни одного файла не найдено");
 			std::cout << title << std::endl;
 
-			std::cout << "Текущая папка - (" + curFilepath + ")" << std::endl;
+			std::cout << curFilepath << std::endl;
 			std::vector<std::string> menu{
-				"Выйти из папки",
-				"Вернуться в изначальную папку",
-				"Возврат в меню"
+				"Для выбора файла используйте ENTER и стрелочки ВВЕРХ ВНИЗ",
+				"Для выхода из меню нажмите ESC"
 			};
 
 			int begCoord = menu.size() + 1 + 1;
 			int cur(begCoord); //текущая координата стрелки выбора папки
 
-			ask(menu);
-			showDir(folderList);
+			for (const auto& line : menu)
+			{
+				std::cout << line << std::endl;
+			}
+			showDir(fileList);
 
-			fileChoice(begCoord, folderList, cur, curFilepath);
-
-			//возвращение пользователя в директорию, где находится программа
-			if (curFilepath == "returnStart")
-				curFilepath = begFilepath;
+			fileChoice(begCoord, fileList, cur, curFilepath);
 
 			system("cls");
 		}
 		catch (const std::exception& ex)
 		{
-			std::cout << "Вы не можете выбрать этот файл или папку!" << std::endl;
-			curFilepath = curFilepath.substr(0, curFilepath.rfind("\\")); //выход из выбранной папки при ошибке
+			std::cout << ex.what() << std::endl;
+			return ""; //выход в меню по ошибке
 		}
 	}
 	return curFilepath;
 }
 
-void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::string& filepath)
+void fileChoice(int begCoord, std::vector<std::string> files, int& cur, std::string& filepath)
 {
-	movingArrow(begCoord, begCoord + folders.size(), cur, 0); //показ стрелки выбора папки  
+	movingArrow(begCoord, begCoord + files.size(), cur, 0); //показ стрелки выбора папки  
 
 	bool chosenMenu(false);
 	while (!chosenMenu)
@@ -203,24 +202,10 @@ void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::s
 		{
 		case 224: //код нажатия на стрелки на клавиатуре
 		{
-			cur = movingArrow(begCoord, begCoord + folders.size() - 1, cur, _getch());
+			cur = movingArrow(begCoord, begCoord + files.size() - 1, cur, _getch());
 			break;
 		}
-		case '1': //выход из текущей папки
-		{
-			filepath = filepath.substr(0, filepath.rfind("\\"));
-			chosenMenu = true;
-			cur = begCoord;
-			break;
-		}
-		case '2': //возвращение в изначальную папку
-		{
-			filepath = "returnStart";
-			chosenMenu = true;
-			cur = begCoord;
-			break;
-		}
-		case '3': //выход без выбора папки
+		case 27: //выход без выбора файла
 		{
 			chosenMenu = true;
 			cur = begCoord;
@@ -229,10 +214,7 @@ void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::s
 		}
 		case 13: //выбор папки
 		{
-			if (folders.size() == 0) //предотвращение выбора когда в папке ничего нет
-				filepath = filepath.substr(0, filepath.rfind("\\"));
-			else
-				filepath = filepath + "\\" + folders[cur - begCoord];
+			filepath = filepath + "\\" + files[cur - begCoord];
 			chosenMenu = true;
 			cur = begCoord;
 			break;
@@ -242,16 +224,14 @@ void fileChoice(int begCoord, std::vector<std::string> folders, int& cur, std::s
 	}
 }
 
-void makeDirNFilesList(std::string filepath, std::vector<std::string>& folderList, fileType type)
+void makeFilesList(std::string filepath, std::vector<std::string>& folderList, fileType type)
 {
 	for (auto const& dirFolder : std::filesystem::directory_iterator(filepath + "\\"))
 	{
-		//цикл сохраняет папки и файлы с метками
+		//цикл сохраняет файлы с метками
 		if ((dirFolder.is_regular_file()
 			and dirFolder.path().extension() == ".txt"
-			and defineFileType(dirFolder.path().string()) == type)
-
-			or dirFolder.is_directory())
+			and defineFileType(dirFolder.path().string()) == type))
 		{
 			std::string path = dirFolder.path().string();
 			path = path.substr(path.rfind("\\") + 1, path.size());
@@ -299,21 +279,17 @@ fileType defineFileType(const std::string& filename)
 	return result;
 }
 
-std::string askFullPath()
+std::string askName()
 {
-	std::string folder = findFolder("Выберите папку, где будете хранить файл");
-	if (folder == "")
-		return "None";
-
 	std::string filename = askString("Введите название файла");
 
 	filename = space2underscore(filename);
 	filename = filename + "_" + currentTime();
 
-	std::string fullPath = folder + "\\" + filename + ".html";
+	std::string fullPath = filename + ".html";
 
 	system("cls");
-	std::cout << "Файл под названием " << filename << " создан!" << std::endl;
+	std::cout << "Файл под названием " << filename << ".html создан!" << std::endl;
 	return fullPath;
 }
 
