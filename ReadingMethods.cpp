@@ -54,11 +54,23 @@ void checkSpecialSymbols(const std::string& word)
 	for (int i(0); i < forbiddenSymbols.size(); i++)
 	{
 		if (word.find(forbiddenSymbols[i]) != -1)
-			throw std::invalid_argument("Файл не может содержать \\/:*?<>\"|");
+			throw std::invalid_argument("Название файла не может содержать \\/:*?<>\"|");
 	}
 }
 
 std::string askString(const std::string& question)
+{
+	std::string res;
+	std::cout << question << std::endl;
+
+	std::cout << ">>";
+	std::getline(std::cin, res);
+
+	system("cls");
+	return res;
+}
+
+std::string askFilename(const std::string& question)
 {
 	std::string res;
 	std::cout << question << std::endl;
@@ -78,6 +90,8 @@ std::string askString(const std::string& question)
 				system("cls");
 				std::cout << question << std::endl;
 			}
+			if (res == "0") //выход из выбора названия файла
+				res = "";
 		}
 		catch (std::exception& ex)
 		{
@@ -532,25 +546,29 @@ void combineFiles(const std::string& filename1, const std::string& filename2)
 		try
 		{
 			filenameMerged = askName(); //получение названия файла от пользователя
+			if (filenameMerged == "") //выход из цикла набора названия файла
+				approved = true;
+			else
+			{
+				std::fstream bookStream, publisherStream, mergedStream;
+				bookStream.open(filename1, std::ios::in);
+				publisherStream.open(filename2, std::ios::in);
+				mergedStream.open(filenameMerged, std::ios::out);
 
-			std::fstream bookStream, publisherStream, mergedStream;
-			bookStream.open(filename1, std::ios::in);
-			publisherStream.open(filename2, std::ios::in);
-			mergedStream.open(filenameMerged, std::ios::out);
+				if (!mergedStream.is_open())
+					throw std::invalid_argument("Не удалось создать файл"); //для проверки открытия файла
 
-			if (!mergedStream.is_open()) 
-				throw std::invalid_argument("Не удалось создать файл"); //для проверки открытия файла
+				parseNHTMLout(bookStream, publisherStream, mergedStream); //слияние файлов
 
-			parseNHTMLout(bookStream, publisherStream, mergedStream); //слияние файлов
+				bookStream.close();
+				publisherStream.close();
+				mergedStream.close();
 
-			bookStream.close();
-			publisherStream.close();
-			mergedStream.close();
-
-			std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl;
-			_getch();
-			system("cls");
-			approved = true;
+				std::cout << "Ваши файлы сгруппированны, для продолжения нажмите Enter" << std::endl;
+				_getch();
+				system("cls");
+				approved = true;
+			}
 		}
 		catch (std::exception& ex)
 		{

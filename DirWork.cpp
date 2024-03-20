@@ -141,16 +141,21 @@ fileType defineFileType(const std::string& filename)
 
 std::string askName()
 {
-	std::string filename = askString("Введите название файла");
+	std::string filename = askFilename("Введите название файла, для выхода из ввода названия введите 0");
 
-	filename = space2underscore(filename);
-	filename = filename + "_" + currentTime();
+	if (filename == "") //выход из ввода названия файла 
+		return "";
+	else
+	{
+		filename = space2underscore(filename);
+		filename = filename + "_" + currentTime();
 
-	std::string fullPath = filename + ".html";
+		std::string fullPath = filename + ".html";
 
-	system("cls");
-	std::cout << "Файл под названием " << filename << ".html создан!" << std::endl;
-	return fullPath;
+		system("cls");
+		std::cout << "Файл под названием " << filename << ".html создан!" << std::endl;
+		return fullPath;
+	}
 }
 
 std::string space2underscore(std::string text)
