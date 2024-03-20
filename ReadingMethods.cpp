@@ -63,9 +63,19 @@ std::string askString(const std::string& question)
 	std::string res;
 	std::cout << question << std::endl;
 
-	std::cout << ">>";
-	std::getline(std::cin, res);
-
+	bool approved(false); //переменная цикла, становится true когда строка введена без ошибок
+	while (!approved)
+	{
+		std::cout << ">>";
+		std::getline(std::cin, res);
+		if (res != "" and res != ";") //проверка ввода пользователя на пустую строку и специальный символ
+			approved = true;
+		else
+		{
+			system("cls");
+			std::cout << question << std::endl;
+		}
+	}
 	system("cls");
 	return res;
 }
